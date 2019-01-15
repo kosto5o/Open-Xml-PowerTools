@@ -1,3 +1,3 @@
 ﻿using System.Runtime.CompilerServices;
 
-[assembly: InternalsVisibleTo("OpenXmlPowerTools.Tests")]
+[assembly: InternalsVisibleTo("OpenDocx.Tests")]

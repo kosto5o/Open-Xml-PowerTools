@@ -9,4 +9,4 @@ build_script:
   - cmd: dotnet build
 
 test_script:
-  - cmd: dotnet test .\OpenXmlPowerTools.Tests
+  - cmd: dotnet test .\OpenDocx.Tests

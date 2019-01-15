@@ -53,7 +53,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SpreadsheetWriter01", "Open
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SpreadsheetWriter02", "OpenXmlPowerToolsExamples\SpreadsheetWriter02\SpreadsheetWriter02.csproj", "{DF1D84AF-27B8-4F87-A673-CCFADC3AAF02}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenXmlPowerTools.Tests", "OpenXmlPowerTools.Tests\OpenXmlPowerTools.Tests.csproj", "{B1328B70-33B8-40E0-A729-38C34D659B5C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenDocx.Tests", "OpenDocx.Tests\OpenDocx.Tests.csproj", "{B1328B70-33B8-40E0-A729-38C34D659B5C}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DocumentAssembler02", "OpenXmlPowerToolsExamples\DocumentAssembler02\DocumentAssembler02.csproj", "{D6DFAC7C-82F4-4318-A9F0-6450D2945D96}"
 EndProject

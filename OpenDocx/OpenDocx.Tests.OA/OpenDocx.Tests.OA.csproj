@@ -10,7 +10,7 @@
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>OpenXmlPowerTools.Tests.OA</RootNamespace>
-    <AssemblyName>OpenXmlPowerTools.Tests.OA</AssemblyName>
+    <AssemblyName>OpenDocx.Tests.OA</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <NuGetPackageImportStamp>f5d754ea</NuGetPackageImportStamp>
@@ -69,13 +69,13 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\OpenXmlPowerTools.Tests\HtmlConverterTests.cs">
+    <Compile Include="..\OpenDocx.Tests\HtmlConverterTests.cs">
       <Link>HtmlConverterTests.cs</Link>
     </Compile>
-    <Compile Include="..\OpenXmlPowerTools.Tests\HtmlToWmlConverterTests.cs">
+    <Compile Include="..\OpenDocx.Tests\HtmlToWmlConverterTests.cs">
       <Link>HtmlToWmlConverterTests.cs</Link>
     </Compile>
-    <Compile Include="..\OpenXmlPowerTools.Tests\HtmlToWmlReadAsXElement.cs">
+    <Compile Include="..\OpenDocx.Tests\HtmlToWmlReadAsXElement.cs">
       <Link>HtmlToWmlReadAsXElement.cs</Link>
     </Compile>
     <Compile Include="HtmlToWmlConverterTests2.cs" />

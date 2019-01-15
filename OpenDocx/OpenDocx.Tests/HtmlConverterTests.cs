@@ -18,7 +18,7 @@ Email: eric@ericwhite.com
 
 #define COPY_FILES_FOR_DEBUGGING
 
-// DO_CONVERSION_VIA_WORD is defined in the project OpenXmlPowerTools.Tests.OA.csproj, but not in the OpenXmlPowerTools.Tests.csproj
+// DO_CONVERSION_VIA_WORD is defined in the project OpenDocx.Tests.OA.csproj, but not in the OpenDocx.Tests.csproj
 
 using System;
 using System.Collections.Generic;
