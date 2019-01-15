@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.27130.2036
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenXmlPowerTools", "OpenXmlPowerTools\OpenXmlPowerTools.csproj", "{6F957FF3-AFCC-4D69-8FBC-71AE21BC45C9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OpenDocx", "OpenDocx\OpenDocx.csproj", "{6F957FF3-AFCC-4D69-8FBC-71AE21BC45C9}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ChartUpdater01", "OpenXmlPowerToolsExamples\ChartUpdater01\ChartUpdater01.csproj", "{1B03D24F-FB08-42E1-BB25-2D1BB907991B}"
 EndProject
