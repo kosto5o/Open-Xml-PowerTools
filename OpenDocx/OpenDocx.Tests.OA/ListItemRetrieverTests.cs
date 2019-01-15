@@ -29,7 +29,7 @@ using System.Xml.Linq;
 using HtmlAgilityPack;
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Validation;
-using OpenXmlPowerTools;
+using OpenDocx;
 using Xunit;
 
 namespace OxPt
@@ -153,7 +153,7 @@ namespace OxPt
                         DirectoryInfo di = new DirectoryInfo(outputDirectory);
                         if (!di.Exists)
                         {
-                            throw new OpenXmlPowerToolsException("Output directory does not exist");
+                            throw new OpenDocxException("Output directory does not exist");
                         }
                         destFileName = new FileInfo(Path.Combine(di.FullName, destFileName.Name));
                     }

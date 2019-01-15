@@ -57,7 +57,7 @@ using DocumentFormat.OpenXml.Packaging;
 // Content-Language: en-US
 // Content-Language: fr-FR
 
-namespace OpenXmlPowerTools
+namespace OpenDocx
 {
     public partial class WmlDocument
     {
@@ -2299,13 +2299,13 @@ namespace OpenXmlPowerTools
             var fontName = (string)r.Attribute(PtOpenXml.pt + "FontName") ??
                            (string)r.Ancestors(W.p).First().Attribute(PtOpenXml.pt + "FontName");
             if (fontName == null)
-                throw new OpenXmlPowerToolsException("Internal Error, should have FontName attribute");
+                throw new OpenDocxException("Internal Error, should have FontName attribute");
             if (UnknownFonts.Contains(fontName))
                 return 0;
 
             var rPr = r.Element(W.rPr);
             if (rPr == null)
-                throw new OpenXmlPowerToolsException("Internal Error, should have run properties");
+                throw new OpenDocxException("Internal Error, should have run properties");
 
             var sz = GetFontSize(r) ?? 22m;
 

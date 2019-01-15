@@ -5,7 +5,7 @@ using System.Text;
 using System.Xml.Linq;
 using DocumentFormat.OpenXml.Packaging;
 
-namespace OpenXmlPowerTools
+namespace OpenDocx
 {
     public static partial class WmlComparer
     {
@@ -46,14 +46,14 @@ namespace OpenXmlPowerTools
         {
             List<XElement> lastSectPrList = contentParent.Elements(W.sectPr).ToList();
             if (lastSectPrList.Count() > 1)
-                throw new OpenXmlPowerToolsException("Invalid document");
+                throw new OpenDocxException("Invalid document");
 
             XElement lastSectPr = lastSectPrList.FirstOrDefault();
             if (lastSectPr != null)
             {
                 XElement lastParagraph = contentParent.Elements(W.p).LastOrDefault();
                 if (lastParagraph == null)
-                    throw new OpenXmlPowerToolsException("Invalid document");
+                    throw new OpenDocxException("Invalid document");
 
                 XElement pPr = lastParagraph.Element(W.pPr);
                 if (pPr == null)

@@ -25,12 +25,12 @@ using System.Linq;
 using System.Text;
 using System.Xml.Linq;
 using DocumentFormat.OpenXml.Packaging;
-using OpenXmlPowerTools;
-using OpenXmlPowerTools.HtmlToWml;
-using OpenXmlPowerTools.HtmlToWml.CSS;
+using OpenDocx;
+using OpenDocx.HtmlToWml;
+using OpenDocx.HtmlToWml.CSS;
 using System.Text.RegularExpressions;
 
-namespace OpenXmlPowerTools
+namespace OpenDocx
 {
     public class HtmlToWmlConverterSettings
     {
@@ -468,7 +468,7 @@ AAAAAAAAAAAAAAAANi8AAGRvY1Byb3BzL2FwcC54bWxQSwUGAAAAAAwADAAJAwAA3DEAAAAA";
 
         public override string ToString()
         {
-            throw new OpenXmlPowerToolsException("Can't convert directly to string, must cast to long");
+            throw new OpenDocxException("Can't convert directly to string, must cast to long");
         }
     }
 
@@ -493,7 +493,7 @@ AAAAAAAAAAAAAAAANi8AAGRvY1Byb3BzL2FwcC54bWxQSwUGAAAAAAwADAAJAwAA3DEAAAAA";
 
         public override string ToString()
         {
-            throw new OpenXmlPowerToolsException("Can't convert directly to string, must cast to double");
+            throw new OpenDocxException("Can't convert directly to string, must cast to double");
         }
     }
 
@@ -523,7 +523,7 @@ AAAAAAAAAAAAAAAANi8AAGRvY1Byb3BzL2FwcC54bWxQSwUGAAAAAAwADAAJAwAA3DEAAAAA";
 
         public override string ToString()
         {
-            throw new OpenXmlPowerToolsException("Can't convert directly to string, must cast to long");
+            throw new OpenDocxException("Can't convert directly to string, must cast to long");
         }
     }
 

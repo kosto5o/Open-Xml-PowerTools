@@ -16,7 +16,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Xml.Linq;
 
-namespace OpenXmlPowerTools
+namespace OpenDocx
 {
     public class UnicodeMapper
     {

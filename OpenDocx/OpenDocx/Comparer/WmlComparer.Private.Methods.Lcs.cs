@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Xml.Linq;
 
-namespace OpenXmlPowerTools
+namespace OpenDocx
 {
     public static partial class WmlComparer
     {
@@ -311,7 +311,7 @@ namespace OpenXmlPowerTools
                                 return "Textbox";
                             }
 
-                            throw new OpenXmlPowerToolsException("Internal error");
+                            throw new OpenDocxException("Internal error");
                         })
                         .ToArray();
 
@@ -335,7 +335,7 @@ namespace OpenXmlPowerTools
                                 return "Textbox";
                             }
 
-                            throw new OpenXmlPowerToolsException("Internal error");
+                            throw new OpenDocxException("Internal error");
                         })
                         .ToArray();
 
@@ -1217,7 +1217,7 @@ namespace OpenXmlPowerTools
             ComparisonUnitAtom firstContentAtom1 = tblGroup1.DescendantContentAtoms().FirstOrDefault();
             if (firstContentAtom1 == null)
             {
-                throw new OpenXmlPowerToolsException("Internal error");
+                throw new OpenDocxException("Internal error");
             }
 
             XElement tblElement1 = firstContentAtom1
@@ -1228,7 +1228,7 @@ namespace OpenXmlPowerTools
             ComparisonUnitAtom firstContentAtom2 = tblGroup2.DescendantContentAtoms().FirstOrDefault();
             if (firstContentAtom2 == null)
             {
-                throw new OpenXmlPowerToolsException("Internal error");
+                throw new OpenDocxException("Internal error");
             }
 
             XElement tblElement2 = firstContentAtom2

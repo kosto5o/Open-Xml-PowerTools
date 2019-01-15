@@ -22,7 +22,7 @@ using System.Linq;
 using System.Xml.Linq;
 using DocumentFormat.OpenXml.Packaging;
 
-namespace OpenXmlPowerTools
+namespace OpenDocx
 {
     public class RevisionAccepter
     {

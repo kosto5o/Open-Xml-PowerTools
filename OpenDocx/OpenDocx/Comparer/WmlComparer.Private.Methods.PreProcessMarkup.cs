@@ -7,7 +7,7 @@ using System.Xml.Linq;
 using DocumentFormat.OpenXml;
 using DocumentFormat.OpenXml.Packaging;
 
-namespace OpenXmlPowerTools
+namespace OpenDocx
 {
     public static partial class WmlComparer
     {
@@ -98,11 +98,11 @@ namespace OpenXmlPowerTools
             {
                 XDocument xDoc = part.GetXDocument();
                 if (xDoc.Descendants(W.altChunk).Any())
-                    throw new OpenXmlPowerToolsException("Unsupported document, contains w:altChunk");
+                    throw new OpenDocxException("Unsupported document, contains w:altChunk");
                 if (xDoc.Descendants(W.subDoc).Any())
-                    throw new OpenXmlPowerToolsException("Unsupported document, contains w:subDoc");
+                    throw new OpenDocxException("Unsupported document, contains w:subDoc");
                 if (xDoc.Descendants(W.contentPart).Any())
-                    throw new OpenXmlPowerToolsException("Unsupported document, contains w:contentPart");
+                    throw new OpenDocxException("Unsupported document, contains w:contentPart");
             }
         }
 
@@ -159,7 +159,7 @@ namespace OpenXmlPowerTools
             EndnotesPart endnotesPart = wDoc.MainDocumentPart.EndnotesPart;
 
             XElement document =
-                mainDocPart.GetXDocument().Root ?? throw new OpenXmlPowerToolsException("Invalid document.");
+                mainDocPart.GetXDocument().Root ?? throw new OpenDocxException("Invalid document.");
 
             XElement footnotes = footnotesPart?.GetXDocument().Root;
             XElement endnotes = endnotesPart?.GetXDocument().Root;
@@ -182,7 +182,7 @@ namespace OpenXmlPowerTools
 
                     if (fn == null)
                     {
-                        throw new OpenXmlPowerToolsException("Invalid document");
+                        throw new OpenDocxException("Invalid document");
                     }
 
                     fn.SetAttributeValue(W.id, newId);
@@ -195,7 +195,7 @@ namespace OpenXmlPowerTools
 
                     if (en == null)
                     {
-                        throw new OpenXmlPowerToolsException("Invalid document");
+                        throw new OpenDocxException("Invalid document");
                     }
 
                     en.SetAttributeValue(W.id, newId);

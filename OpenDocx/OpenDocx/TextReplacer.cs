@@ -25,7 +25,7 @@ using System.Xml;
 using System.Xml.Linq;
 using DocumentFormat.OpenXml.Packaging;
 
-namespace OpenXmlPowerTools
+namespace OpenDocx
 {
     public partial class WmlDocument : OpenXmlPowerToolsDocument
     {

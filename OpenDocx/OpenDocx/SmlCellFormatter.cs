@@ -27,7 +27,7 @@ using System.Text.RegularExpressions;
 using System.Xml.Linq;
 using DocumentFormat.OpenXml.Packaging;
 
-namespace OpenXmlPowerTools
+namespace OpenDocx
 {
     public class SmlCellFormatter
     {

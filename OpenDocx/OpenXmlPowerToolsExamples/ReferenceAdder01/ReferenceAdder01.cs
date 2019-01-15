@@ -4,7 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Xml.Linq;
 using DocumentFormat.OpenXml.Packaging;
-using OpenXmlPowerTools;
+using OpenDocx;
 
 class TestTocAdder
 {

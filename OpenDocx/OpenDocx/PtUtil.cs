@@ -31,7 +31,7 @@ using System.Xml;
 using System.Xml.Linq;
 using System.Xml.Schema;
 
-namespace OpenXmlPowerTools
+namespace OpenDocx
 {
     public static class PtUtils
     {
@@ -121,7 +121,7 @@ namespace OpenXmlPowerTools
                             contentType = s;
                             continue;
                         }
-                        throw new OpenXmlPowerToolsException("Unexpected content in MHTML");
+                        throw new OpenDocxException("Unexpected content in MHTML");
                     }
                 }
             }
@@ -196,7 +196,7 @@ namespace OpenXmlPowerTools
                                 thisPartContentType = s;
                                 continue;
                             }
-                            throw new OpenXmlPowerToolsException("Unexpected content in MHTML");
+                            throw new OpenDocxException("Unexpected content in MHTML");
                         }
                         partContentType = thisPartContentType;
                     }

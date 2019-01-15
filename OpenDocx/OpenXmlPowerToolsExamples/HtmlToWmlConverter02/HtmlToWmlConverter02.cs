@@ -8,10 +8,10 @@ using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.Linq;
 using DocumentFormat.OpenXml.Packaging;
-using OpenXmlPowerTools;
-using OpenXmlPowerTools.HtmlToWml;
+using OpenDocx;
+using OpenDocx.HtmlToWml;
 
-namespace OpenXmlPowerTools
+namespace OpenDocx
 {
     class Program
     {
@@ -104,7 +104,7 @@ namespace OpenXmlPowerTools
                         DirectoryInfo di = new DirectoryInfo(outputDirectory);
                         if (!di.Exists)
                         {
-                            throw new OpenXmlPowerToolsException("Output directory does not exist");
+                            throw new OpenDocxException("Output directory does not exist");
                         }
                         destFileName = new FileInfo(Path.Combine(di.FullName, destFileName.Name));
                     }

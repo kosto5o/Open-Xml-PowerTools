@@ -27,7 +27,7 @@ using System.Xml.Linq;
 using DocumentFormat.OpenXml.Packaging;
 using System.Drawing;
 using System.Security.Cryptography;
-using OpenXmlPowerTools;
+using OpenDocx;
 
 // It is possible to optimize DescendantContentAtoms
 
@@ -58,7 +58,7 @@ using OpenXmlPowerTools;
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-namespace OpenXmlPowerTools.Previous
+namespace OpenDocx.Previous
 {
     public class WmlComparerSettings
     {
@@ -622,7 +622,7 @@ namespace OpenXmlPowerTools.Previous
                                     {
                                         var unid = (string)elementLookingAt.Attribute(PtOpenXml.Unid);
                                         if (unid == null)
-                                            throw new OpenXmlPowerToolsException("Internal error");
+                                            throw new OpenDocxException("Internal error");
 
                                         XElement elementToInsertAfter = null;
                                         if (consolidatedByUnid.ContainsKey(unid))
@@ -642,7 +642,7 @@ namespace OpenXmlPowerTools.Previous
                                                     var fnXDoc = wDocDelta.MainDocumentPart.FootnotesPart.GetXDocument();
                                                     var footnote = fnXDoc.Root.Elements(W.footnote).FirstOrDefault(fn => (int)fn.Attribute(W.id) == id);
                                                     if (footnote == null)
-                                                        throw new OpenXmlPowerToolsException("Internal Error");
+                                                        throw new OpenDocxException("Internal Error");
                                                     return footnote;
                                                 })
                                                 .ToArray();
@@ -654,7 +654,7 @@ namespace OpenXmlPowerTools.Previous
                                                     var enXDoc = wDocDelta.MainDocumentPart.EndnotesPart.GetXDocument();
                                                     var endnote = enXDoc.Root.Elements(W.endnote).FirstOrDefault(en => (int)en.Attribute(W.id) == id);
                                                     if (endnote == null)
-                                                        throw new OpenXmlPowerToolsException("Internal Error");
+                                                        throw new OpenDocxException("Internal Error");
                                                     return endnote;
                                                 })
                                                 .ToArray();
@@ -693,7 +693,7 @@ namespace OpenXmlPowerTools.Previous
                                                         var fnXDoc = wDocDelta.MainDocumentPart.FootnotesPart.GetXDocument();
                                                         var footnote = fnXDoc.Root.Elements(W.footnote).FirstOrDefault(fn => (int)fn.Attribute(W.id) == id);
                                                         if (footnote == null)
-                                                            throw new OpenXmlPowerToolsException("Internal Error");
+                                                            throw new OpenDocxException("Internal Error");
                                                         return footnote;
                                                     })
                                                     .ToArray();
@@ -705,7 +705,7 @@ namespace OpenXmlPowerTools.Previous
                                                         var enXDoc = wDocDelta.MainDocumentPart.EndnotesPart.GetXDocument();
                                                         var endnote = enXDoc.Root.Elements(W.endnote).FirstOrDefault(en => (int)en.Attribute(W.id) == id);
                                                         if (endnote == null)
-                                                            throw new OpenXmlPowerToolsException("Internal Error");
+                                                            throw new OpenDocxException("Internal Error");
                                                         return endnote;
                                                     })
                                                     .ToArray();
@@ -1471,7 +1471,7 @@ namespace OpenXmlPowerTools.Previous
                         .Elements()
                         .FirstOrDefault(e => (string)e.Attribute(W.id) == oldId);
                     if (fn == null)
-                        throw new OpenXmlPowerToolsException("Invalid document");
+                        throw new OpenDocxException("Invalid document");
                     fn.Attribute(W.id).Value = newId;
                 }
                 else
@@ -1481,7 +1481,7 @@ namespace OpenXmlPowerTools.Previous
                         .Elements()
                         .FirstOrDefault(e => (string)e.Attribute(W.id) == oldId);
                     if (en == null)
-                        throw new OpenXmlPowerToolsException("Invalid document");
+                        throw new OpenDocxException("Invalid document");
                     en.Attribute(W.id).Value = newId;
                 }
             }
@@ -2117,7 +2117,7 @@ namespace OpenXmlPowerTools.Previous
                         .Distinct()
                         .ToList();
                     if (statusList.Count() > 1)
-                        throw new OpenXmlPowerToolsException("Internal error - have both deleted and inserted text elements in the same run.");
+                        throw new OpenDocxException("Internal error - have both deleted and inserted text elements in the same run.");
                     if (statusList.Count() == 0)
                         return new XElement(W.r,
                             element.Attributes(),
@@ -2181,7 +2181,7 @@ namespace OpenXmlPowerTools.Previous
                             pPr.AddFirst(rPr);
                     }
                     else
-                        throw new OpenXmlPowerToolsException("Internal error");
+                        throw new OpenDocxException("Internal error");
                     return pPr;
                 }
 
@@ -2428,7 +2428,7 @@ namespace OpenXmlPowerTools.Previous
                         XElement newTempElement = (XElement)WordprocessingMLUtil.WmlOrderElementsPerStandard(tempElement);
                         var newContentElement = newTempElement.Descendants().FirstOrDefault(d => d.Name == W.footnote || d.Name == W.endnote);
                         if (newContentElement == null)
-                            throw new OpenXmlPowerToolsException("Internal error");
+                            throw new OpenDocxException("Internal error");
                         footnoteEndnoteAfter.ReplaceNodes(newContentElement.Nodes());
                     }
                 }
@@ -2524,7 +2524,7 @@ namespace OpenXmlPowerTools.Previous
                         .Descendants()
                         .FirstOrDefault(d => d.Name == W.footnote || d.Name == W.endnote);
                     if (newContentElement == null)
-                        throw new OpenXmlPowerToolsException("Internal error");
+                        throw new OpenDocxException("Internal error");
                     footnoteEndnoteAfter.ReplaceNodes(newContentElement.Nodes());
                 }
                 else if (fn.CorrelationStatus == CorrelationStatus.Deleted)
@@ -2619,12 +2619,12 @@ namespace OpenXmlPowerTools.Previous
                         XElement newTempElement = (XElement)WordprocessingMLUtil.WmlOrderElementsPerStandard(tempElement);
                         var newContentElement = newTempElement.Descendants().FirstOrDefault(d => d.Name == W.footnote || d.Name == W.endnote);
                         if (newContentElement == null)
-                            throw new OpenXmlPowerToolsException("Internal error");
+                            throw new OpenDocxException("Internal error");
                         footnoteEndnoteBefore.ReplaceNodes(newContentElement.Nodes());
                     }
                 }
                 else
-                    throw new OpenXmlPowerToolsException("Internal error");
+                    throw new OpenDocxException("Internal error");
             }
         }
 
@@ -2708,7 +2708,7 @@ namespace OpenXmlPowerTools.Previous
                         .FirstOrDefault(e => (string)e.Attribute(W.id) == oldId);
                 }
                 if (footnote == null)
-                    throw new OpenXmlPowerToolsException("Internal error");
+                    throw new OpenDocxException("Internal error");
                 var cloned = new XElement(footnote);
                 cloned.Attribute(W.id).Value = newId;
                 footnotesPartWithRevisionsXDoc
@@ -2744,7 +2744,7 @@ namespace OpenXmlPowerTools.Previous
                         .FirstOrDefault(e => (string)e.Attribute(W.id) == oldId);
                 }
                 if (endnote == null)
-                    throw new OpenXmlPowerToolsException("Internal error");
+                    throw new OpenDocxException("Internal error");
                 var cloned = new XElement(endnote);
                 cloned.Attribute(W.id).Value = newId;
                 endnotesPartWithRevisionsXDoc
@@ -2912,7 +2912,7 @@ namespace OpenXmlPowerTools.Previous
                             {
                                 var thisUnid = (string)ae.Attribute(PtOpenXml.Unid);
                                 if (thisUnid == null)
-                                    throw new OpenXmlPowerToolsException("Internal error");
+                                    throw new OpenDocxException("Internal error");
                                 return thisUnid;
                             })
                             .ToArray();
@@ -2993,7 +2993,7 @@ namespace OpenXmlPowerTools.Previous
                             {
                                 var thisUnid = (string)ae.Attribute(PtOpenXml.Unid);
                                 if (thisUnid == null)
-                                    throw new OpenXmlPowerToolsException("Internal error");
+                                    throw new OpenDocxException("Internal error");
                                 return thisUnid;
                             })
                             .ToArray();
@@ -3107,7 +3107,7 @@ namespace OpenXmlPowerTools.Previous
                         return comparisonUnitAtomList;
                     }
                     else
-                        throw new OpenXmlPowerToolsException("Internal error");
+                        throw new OpenDocxException("Internal error");
                 })
                 .SelectMany(m => m)
                 .ToList();
@@ -3150,14 +3150,14 @@ namespace OpenXmlPowerTools.Previous
                     {
                         var firstContentAtom = cug.DescendantContentAtoms().FirstOrDefault();
                         if (firstContentAtom == null)
-                            throw new OpenXmlPowerToolsException("Internal error");
+                            throw new OpenDocxException("Internal error");
                         var tr = firstContentAtom
                             .AncestorElements
                             .Reverse()
                             .FirstOrDefault(a => a.Name == W.tr);
 
                         if (tr == null)
-                            throw new OpenXmlPowerToolsException("Internal error");
+                            throw new OpenDocxException("Internal error");
                         var trPr = tr.Element(W.trPr);
                         if (trPr == null)
                         {
@@ -3377,11 +3377,11 @@ namespace OpenXmlPowerTools.Previous
             {
                 var xDoc = part.GetXDocument();
                 if (xDoc.Descendants(W.altChunk).Any())
-                    throw new OpenXmlPowerToolsException("Unsupported document, contains w:altChunk");
+                    throw new OpenDocxException("Unsupported document, contains w:altChunk");
                 if (xDoc.Descendants(W.subDoc).Any())
-                    throw new OpenXmlPowerToolsException("Unsupported document, contains w:subDoc");
+                    throw new OpenDocxException("Unsupported document, contains w:subDoc");
                 if (xDoc.Descendants(W.contentPart).Any())
-                    throw new OpenXmlPowerToolsException("Unsupported document, contains w:contentPart");
+                    throw new OpenDocxException("Unsupported document, contains w:contentPart");
             }
         }
 
@@ -4176,7 +4176,7 @@ namespace OpenXmlPowerTools.Previous
                     .ToArray();
 
                 if (cs.ComparisonUnitArray1.Length != cs.ComparisonUnitArray2.Length)
-                    throw new OpenXmlPowerToolsException("Internal error");
+                    throw new OpenDocxException("Internal error");
 
                 newSequence.Add(cs);
             }
@@ -4852,7 +4852,7 @@ namespace OpenXmlPowerTools.Previous
                             break;
                     }
                     if (takeThruName == null)
-                        throw new OpenXmlPowerToolsException("Internal error");
+                        throw new OpenDocxException("Internal error");
                     var relevantAncestors = new List<XElement>();
                     foreach (var ae in da1.First().AncestorElements)
                     {
@@ -4869,7 +4869,7 @@ namespace OpenXmlPowerTools.Previous
                         {
                             var unid = (string)a.Attribute(PtOpenXml.Unid);
                             if (unid == null)
-                                throw new OpenXmlPowerToolsException("Internal error");
+                                throw new OpenDocxException("Internal error");
                             return unid;
                         })
                         .ToArray();
@@ -4891,7 +4891,7 @@ namespace OpenXmlPowerTools.Previous
                                 continue;
 
                             if (unid == null)
-                                throw new OpenXmlPowerToolsException("Internal error");
+                                throw new OpenDocxException("Internal error");
                             unid.Value = z.Unid;
                         }
                     }
@@ -5361,7 +5361,7 @@ namespace OpenXmlPowerTools.Previous
                                     return "Row";
                                 if (cug.ComparisonUnitGroupType == ComparisonUnitGroupType.Textbox)
                                     return "Textbox";
-                                throw new OpenXmlPowerToolsException("Internal error");
+                                throw new OpenDocxException("Internal error");
                             }
                         })
                         .ToArray();
@@ -5380,7 +5380,7 @@ namespace OpenXmlPowerTools.Previous
                                     return "Row";
                                 if (cug.ComparisonUnitGroupType == ComparisonUnitGroupType.Textbox)
                                     return "Textbox";
-                                throw new OpenXmlPowerToolsException("Internal error");
+                                throw new OpenDocxException("Internal error");
                             }
                         })
                         .ToArray();
@@ -5676,7 +5676,7 @@ namespace OpenXmlPowerTools.Previous
                                 return new[] { deletedCorrelatedSequence };
                             }
                             else
-                                throw new OpenXmlPowerToolsException("Internal error");
+                                throw new OpenDocxException("Internal error");
                         })
                             .SelectMany(m => m)
                             .ToList();
@@ -6142,7 +6142,7 @@ namespace OpenXmlPowerTools.Previous
 
             var firstContentAtom1 = tblGroup1.DescendantContentAtoms().FirstOrDefault();
             if (firstContentAtom1 == null)
-                throw new OpenXmlPowerToolsException("Internal error");
+                throw new OpenDocxException("Internal error");
             var tblElement1 = firstContentAtom1
                 .AncestorElements
                 .Reverse()
@@ -6150,7 +6150,7 @@ namespace OpenXmlPowerTools.Previous
 
             var firstContentAtom2 = tblGroup2.DescendantContentAtoms().FirstOrDefault();
             if (firstContentAtom2 == null)
-                throw new OpenXmlPowerToolsException("Internal error");
+                throw new OpenDocxException("Internal error");
             var tblElement2 = firstContentAtom2
                 .AncestorElements
                 .Reverse()
@@ -6678,7 +6678,7 @@ namespace OpenXmlPowerTools.Previous
                     // for a table, we initially get all ComparisonUnitAtoms for the entire table, then process.  When processing a row,
                     // no ComparisonUnitAtoms will have ancestors outside the row.  Ditto for cells, and on down the tree.
                     if (level >= sr.AncestorElements.Length)
-                        throw new OpenXmlPowerToolsException("Internal error 4 - why do we have ComparisonUnitAtom objects with fewer ancestors than its siblings?");
+                        throw new OpenDocxException("Internal error 4 - why do we have ComparisonUnitAtom objects with fewer ancestors than its siblings?");
 
                     var unid = (string)sr.AncestorElements[level].Attribute(PtOpenXml.Unid);
                     return unid;
@@ -6707,7 +6707,7 @@ namespace OpenXmlPowerTools.Previous
                 {
                     // see the comment above at the beginning of CoalesceRecurse
                     if (level >= g.First().AncestorElements.Length)
-                        throw new OpenXmlPowerToolsException("Internal error 3 - why do we have ComparisonUnitAtom objects with fewer ancestors than its siblings?");
+                        throw new OpenDocxException("Internal error 3 - why do we have ComparisonUnitAtom objects with fewer ancestors than its siblings?");
 
                     var ancestorBeingConstructed = g.First().AncestorElements[level];
 
@@ -6783,13 +6783,13 @@ namespace OpenXmlPowerTools.Previous
         {
             var lastSectPrList = contentParent.Elements(W.sectPr).ToList();
             if (lastSectPrList.Count() > 1)
-                throw new OpenXmlPowerToolsException("Invalid document");
+                throw new OpenDocxException("Invalid document");
             var lastSectPr = lastSectPrList.FirstOrDefault();
             if (lastSectPr != null)
             {
                 var lastParagraph = contentParent.Elements(W.p).LastOrDefault();
                 if (lastParagraph == null)
-                    throw new OpenXmlPowerToolsException("Invalid document");
+                    throw new OpenDocxException("Invalid document");
                 var pPr = lastParagraph.Element(W.pPr);
                 if (pPr == null)
                 {
@@ -7298,7 +7298,7 @@ namespace OpenXmlPowerTools.Previous
             var ancestor = ancestorsToLookAt[level];
 
             if (ancestor == null)
-                throw new OpenXmlPowerToolsException("Internal error: ComparisonUnitGroup");
+                throw new OpenDocxException("Internal error: ComparisonUnitGroup");
             SHA1Hash = (string)ancestor.Attribute(PtOpenXml.SHA1Hash);
             CorrelatedSHA1Hash = (string)ancestor.Attribute(PtOpenXml.CorrelatedSHA1Hash);
             StructureSHA1Hash = (string)ancestor.Attribute(PtOpenXml.StructureSHA1Hash);
@@ -7317,7 +7317,7 @@ namespace OpenXmlPowerTools.Previous
                 }
                 var tw = thisGroup as ComparisonUnitWord;
                 if (tw == null)
-                    throw new OpenXmlPowerToolsException("Internal error: GetFirstComparisonUnitAtomOfGroup");
+                    throw new OpenDocxException("Internal error: GetFirstComparisonUnitAtomOfGroup");
                 var ca = (ComparisonUnitAtom)tw.Contents.First();
                 return ca;
             }

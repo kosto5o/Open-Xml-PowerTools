@@ -30,7 +30,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Xml.Linq;
 using DocumentFormat.OpenXml.Packaging;
-using OpenXmlPowerTools;
+using OpenDocx;
 
 class HtmlConverterHelper
 {
@@ -66,7 +66,7 @@ class HtmlConverterHelper
                     DirectoryInfo di = new DirectoryInfo(outputDirectory);
                     if (!di.Exists)
                     {
-                        throw new OpenXmlPowerToolsException("Output directory does not exist");
+                        throw new OpenDocxException("Output directory does not exist");
                     }
                     destFileName = new FileInfo(Path.Combine(di.FullName, destFileName.Name));
                 }

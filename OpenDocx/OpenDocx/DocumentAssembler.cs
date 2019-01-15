@@ -28,10 +28,10 @@ using System.Xml.XPath;
 using System.Xml.Schema;
 using DocumentFormat.OpenXml.Office.CustomUI;
 using DocumentFormat.OpenXml.Packaging;
-using OpenXmlPowerTools;
+using OpenDocx;
 using System.Collections;
 
-namespace OpenXmlPowerTools
+namespace OpenDocx
 {
     public class DocumentAssembler
     {
@@ -50,7 +50,7 @@ namespace OpenXmlPowerTools
                 using (WordprocessingDocument wordDoc = WordprocessingDocument.Open(mem, true))
                 {
                     if (RevisionAccepter.HasTrackedRevisions(wordDoc))
-                        throw new OpenXmlPowerToolsException("Invalid DocumentAssembler template - contains tracked revisions");
+                        throw new OpenDocxException("Invalid DocumentAssembler template - contains tracked revisions");
 
                     var te = new TemplateError();
                     foreach (var part in wordDoc.ContentParts())
@@ -274,7 +274,7 @@ namespace OpenXmlPowerTools
                     else if (metadata.Name == PA.Conditional)
                         matchingEndName = PA.EndConditional;
                     if (matchingEndName == null)
-                        throw new OpenXmlPowerToolsException("Internal error");
+                        throw new OpenDocxException("Internal error");
                     var matchingEnd = metadata.ElementsAfterSelf(matchingEndName).FirstOrDefault(end => { return (int)end.Attribute(PA.Depth) == depth; });
                     if (matchingEnd == null)
                     {
@@ -422,7 +422,7 @@ namespace OpenXmlPowerTools
                         {
                             var runToReplace = newPara.Descendants(W.r).FirstOrDefault(rn => rn.Value == thisGuid && rn.Parent.Name != PA.Content);
                             if (runToReplace == null)
-                                throw new OpenXmlPowerToolsException("Internal error");
+                                throw new OpenDocxException("Internal error");
                             if (rri.XmlExceptionMessage != null)
                                 runToReplace.ReplaceWith(CreateRunErrorMessage(rri.XmlExceptionMessage, te));
                             else if (rri.SchemaValidationMessage != null)

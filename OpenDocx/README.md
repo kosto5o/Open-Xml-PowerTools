@@ -61,14 +61,14 @@ Build Instructions
  
  With Visual Studio:
 
-- Open `OpenXmlPowerTools.sln` in Visual Studio
+- Open `OpenDocx.sln` in Visual Studio
 - Rebuild the project
 - Build the solution.  To validate the build, open the Test Explorer.  Click Run All.
 - To run an example, set the example as the startup project, and press F5.
 
 With .NET CLI toolchain:
 
-- Run `dotnet build OpenXmlPowerTools.sln`
+- Run `dotnet build OpenDocx.sln`
 
 Change Log
 ==========

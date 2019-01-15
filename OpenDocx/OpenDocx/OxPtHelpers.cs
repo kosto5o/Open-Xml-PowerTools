@@ -26,12 +26,12 @@ using System.Xml.Linq;
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Wordprocessing;
 using DocumentFormat.OpenXml.Validation;
-using OpenXmlPowerTools;
+using OpenDocx;
 using System.Text;
 using DocumentFormat.OpenXml;
 using System.Drawing.Imaging;
 
-namespace OpenXmlPowerTools
+namespace OpenDocx
 {
     public static class AddDocxTextHelper
     {
@@ -70,7 +70,7 @@ namespace OpenXmlPowerTools
                     {
                         int colorValue = ColorParser.FromName(foreColor).ToArgb();
                         if (colorValue == 0)
-                            throw new OpenXmlPowerToolsException(String.Format("Add-DocxText: The specified color {0} is unsupported, Please specify the valid color. Ex, Red, Green", foreColor));
+                            throw new OpenDocxException(String.Format("Add-DocxText: The specified color {0} is unsupported, Please specify the valid color. Ex, Red, Green", foreColor));
 
                         string ColorHex = string.Format("{0:x6}", colorValue);
                         runProperties.AppendChild(new DocumentFormat.OpenXml.Wordprocessing.Color() { Val = ColorHex.Substring(2) });
@@ -83,7 +83,7 @@ namespace OpenXmlPowerTools
                     {
                         int colorShade = ColorParser.FromName(backColor).ToArgb();
                         if (colorShade == 0)
-                            throw new OpenXmlPowerToolsException(String.Format("Add-DocxText: The specified color {0} is unsupported, Please specify the valid color. Ex, Red, Green", foreColor));
+                            throw new OpenDocxException(String.Format("Add-DocxText: The specified color {0} is unsupported, Please specify the valid color. Ex, Red, Green", foreColor));
 
                         string ColorShadeHex = string.Format("{0:x6}", colorShade);
                         runProperties.AppendChild(new Shading() { Fill = ColorShadeHex.Substring(2), Val = ShadingPatternValues.Clear });
@@ -325,7 +325,7 @@ AAsACwDBAgAAbCwAAAAA";
 
                                     //Check if the style is proper style. Ex, Heading1, Heading2
                                     if (templateStyle == null)
-                                        throw new OpenXmlPowerToolsException(String.Format("Add-DocxText: The specified style name {0} is unsupported, Please specify the valid style. Ex, Heading1, Heading2, Title", styleName));
+                                        throw new OpenDocxException(String.Format("Add-DocxText: The specified style name {0} is unsupported, Please specify the valid style. Ex, Heading1, Heading2, Title", styleName));
                                     else
                                         part.Styles.Append((templateStyle.CloneNode(true)));
                                 }
@@ -365,7 +365,7 @@ AAsACwDBAgAAbCwAAAAA";
                         DirectoryInfo di = new DirectoryInfo(outputDirectory);
                         if (!di.Exists)
                         {
-                            throw new OpenXmlPowerToolsException("Output directory does not exist");
+                            throw new OpenDocxException("Output directory does not exist");
                         }
                         destFileName = new FileInfo(Path.Combine(di.FullName, destFileName.Name));
                     }

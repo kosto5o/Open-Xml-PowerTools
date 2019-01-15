@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace OpenXmlPowerTools
+namespace OpenDocx
 {
     public abstract class ComparisonUnit
     {

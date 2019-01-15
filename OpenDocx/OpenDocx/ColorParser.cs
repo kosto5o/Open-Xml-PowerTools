@@ -18,7 +18,7 @@ Email: eric@ericwhite.com
 
 using System.Drawing;
 
-namespace OpenXmlPowerTools
+namespace OpenDocx
 {
     public static class ColorParser
     {

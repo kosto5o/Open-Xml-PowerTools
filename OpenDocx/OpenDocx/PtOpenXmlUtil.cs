@@ -42,7 +42,7 @@ using FontFamily = System.Drawing.FontFamily;
 
 // ReSharper disable InconsistentNaming
 
-namespace OpenXmlPowerTools
+namespace OpenDocx
 {
     public static class PtOpenXmlExtensions
     {
@@ -670,13 +670,13 @@ namespace OpenXmlPowerTools
             if (fontName == null)
                 fontName = (string)r.Ancestors(W.p).First().Attribute(PtOpenXml.pt + "FontName");
             if (fontName == null)
-                throw new OpenXmlPowerToolsException("Internal Error, should have FontName attribute");
+                throw new OpenDocxException("Internal Error, should have FontName attribute");
             if (UnknownFonts.Contains(fontName))
                 return 0;
 
             var rPr = r.Element(W.rPr);
             if (rPr == null)
-                throw new OpenXmlPowerToolsException("Internal Error, should have run properties");
+                throw new OpenDocxException("Internal Error, should have run properties");
             var languageType = (string)r.Attribute(PtOpenXml.LanguageType);
             decimal? szn = null;
             if (languageType == "bidi")
@@ -5958,9 +5958,9 @@ listSeparator
         public InvalidOpenXmlDocumentException(string message) : base(message) { }
     }
 
-    public class OpenXmlPowerToolsException : Exception
+    public class OpenDocxException : Exception
     {
-        public OpenXmlPowerToolsException(string message) : base(message) { }
+        public OpenDocxException(string message) : base(message) { }
     }
 
     public class ColumnReferenceOutOfRange : Exception

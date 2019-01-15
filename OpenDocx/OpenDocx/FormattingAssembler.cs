@@ -24,7 +24,7 @@ using System.Xml.Linq;
 using DocumentFormat.OpenXml.Packaging;
 using System.Drawing;
 
-namespace OpenXmlPowerTools
+namespace OpenDocx
 {
     public class FormattingAssemblerSettings
     {

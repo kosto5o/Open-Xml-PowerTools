@@ -1,4 +1,4 @@
-﻿namespace OpenXmlPowerTools
+﻿namespace OpenDocx
 {
     internal class PartSHA1HashAnnotation
     {

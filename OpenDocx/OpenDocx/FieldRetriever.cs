@@ -23,7 +23,7 @@ using System.Text;
 using System.Xml.Linq;
 using DocumentFormat.OpenXml.Packaging;
 
-namespace OpenXmlPowerTools
+namespace OpenDocx
 {
     public class FieldRetriever
     {
@@ -47,7 +47,7 @@ namespace OpenXmlPowerTools
 #else
             var cachedAnnotationInformation = root.Annotation<Dictionary<int, List<XElement>>>();
             if (cachedAnnotationInformation == null)
-                throw new OpenXmlPowerToolsException("Internal error");
+                throw new OpenDocxException("Internal error");
 
             // it is possible that a field code contains no instr text
             if (!cachedAnnotationInformation.ContainsKey(id))

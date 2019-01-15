@@ -28,7 +28,7 @@ using System.Linq;
 using System.Xml.Linq;
 using DocumentFormat.OpenXml.Packaging;
 
-namespace OpenXmlPowerTools
+namespace OpenDocx
 {
     public partial class WmlDocument : OpenXmlPowerToolsDocument
     {
@@ -688,7 +688,7 @@ namespace OpenXmlPowerTools
                             InitEmptyHeaderOrFooter(doc.MainDocumentPart, sect, hf.Ref, hf.Type);
                         var reference = sect.Elements(hf.Ref).FirstOrDefault(z => (string)z.Attribute(W.type) == hf.Type);
                         if (reference == null)
-                            throw new OpenXmlPowerToolsException("Internal error");
+                            throw new OpenDocxException("Internal error");
                         hf.CachedPartRid = (string)reference.Attribute(R.id);
                     }
                     firstSection = false;
@@ -968,7 +968,7 @@ namespace OpenXmlPowerTools
                 catch (ArgumentOutOfRangeException)
                 {
                     var message = string.Format("ArgumentOutOfRangeException, attempting to get header rId={0}", oldRid);
-                    throw new OpenXmlPowerToolsException(message);
+                    throw new OpenDocxException(message);
                 }
                 XDocument oldHeaderXDoc = oldHeaderPart.GetXDocument();
                 if (oldHeaderXDoc != null && oldHeaderXDoc.Root != null)
@@ -1625,7 +1625,7 @@ namespace OpenXmlPowerTools
             RemoveGfxdata(newContent);
 
             if (insertId == null)
-                throw new OpenXmlPowerToolsException("Internal error");
+                throw new OpenDocxException("Internal error");
 
             XElement insertElementToReplace = partXDoc
                 .Descendants(PtOpenXml.Insert)

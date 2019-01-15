@@ -7,7 +7,7 @@ using System.Text;
 using System.Xml.Linq;
 using DocumentFormat.OpenXml.Packaging;
 
-namespace OpenXmlPowerTools
+namespace OpenDocx
 {
     public static partial class WmlComparer
     {
@@ -128,7 +128,7 @@ namespace OpenXmlPowerTools
                                     {
                                         var unid = (string) elementLookingAt.Attribute(PtOpenXml.Unid);
                                         if (unid == null)
-                                            throw new OpenXmlPowerToolsException("Internal error");
+                                            throw new OpenDocxException("Internal error");
 
                                         XElement elementToInsertAfter = null;
                                         if (consolidatedByUnid.ContainsKey(unid))
@@ -149,7 +149,7 @@ namespace OpenXmlPowerTools
                                                     XElement footnote = fnXDoc.Root.Elements(W.footnote)
                                                         .FirstOrDefault(fn => (int) fn.Attribute(W.id) == id);
                                                     if (footnote == null)
-                                                        throw new OpenXmlPowerToolsException("Internal Error");
+                                                        throw new OpenDocxException("Internal Error");
 
                                                     return footnote;
                                                 })
@@ -163,7 +163,7 @@ namespace OpenXmlPowerTools
                                                     XElement endnote = enXDoc.Root.Elements(W.endnote)
                                                         .FirstOrDefault(en => (int) en.Attribute(W.id) == id);
                                                     if (endnote == null)
-                                                        throw new OpenXmlPowerToolsException("Internal Error");
+                                                        throw new OpenDocxException("Internal Error");
 
                                                     return endnote;
                                                 })
@@ -203,7 +203,7 @@ namespace OpenXmlPowerTools
                                                     XElement footnote = fnXDoc.Root.Elements(W.footnote)
                                                         .FirstOrDefault(fn => (int) fn.Attribute(W.id) == id);
                                                     if (footnote == null)
-                                                        throw new OpenXmlPowerToolsException("Internal Error");
+                                                        throw new OpenDocxException("Internal Error");
 
                                                     return footnote;
                                                 })
@@ -217,7 +217,7 @@ namespace OpenXmlPowerTools
                                                     XElement endnote = enXDoc.Root.Elements(W.endnote)
                                                         .FirstOrDefault(en => (int) en.Attribute(W.id) == id);
                                                     if (endnote == null)
-                                                        throw new OpenXmlPowerToolsException("Internal Error");
+                                                        throw new OpenDocxException("Internal Error");
 
                                                     return endnote;
                                                 })

@@ -23,9 +23,9 @@ using System.Linq;
 using System.Text;
 using System.Xml.Linq;
 using DocumentFormat.OpenXml.Packaging;
-using OpenXmlPowerTools;
+using OpenDocx;
 
-namespace OpenXmlPowerTools
+namespace OpenDocx
 {
     public enum ChartDataType
     {
@@ -168,7 +168,7 @@ namespace OpenXmlPowerTools
 
                     var oldCat = firstSeries.Elements(C.cat).FirstOrDefault();
                     if (oldCat == null)
-                        throw new OpenXmlPowerToolsException("Invalid chart markup");
+                        throw new OpenDocxException("Invalid chart markup");
 
                     var catHasFormula = oldCat.Descendants(C.f).Any();
                     if (catHasFormula)
@@ -388,7 +388,7 @@ namespace OpenXmlPowerTools
                     }
 
                     if (newSer == null)
-                        throw new OpenXmlPowerToolsException("Unsupported chart type");
+                        throw new OpenDocxException("Unsupported chart type");
 
                     int accentNumber = (si % 6) + 1;
                     newSer = (XElement)UpdateAccentTransform(newSer, accentNumber);
@@ -556,7 +556,7 @@ namespace OpenXmlPowerTools
                 }
             }
             if (cellXfs == null)
-                throw new OpenXmlPowerToolsException("Internal error");
+                throw new OpenDocxException("Internal error");
 
             var cnt = (int)cellXfs.Attribute("count");
             cnt++;

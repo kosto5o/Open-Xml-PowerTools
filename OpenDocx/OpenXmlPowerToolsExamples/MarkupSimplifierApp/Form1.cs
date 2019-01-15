@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Windows.Forms;
 using DocumentFormat.OpenXml.Packaging;
-using OpenXmlPowerTools;
+using OpenDocx;
 
 namespace MarkupSimplifierApp
 {
@@ -45,7 +45,7 @@ namespace MarkupSimplifierApp
                         RemoveWebHidden = cbRemoveWebHidden.Checked,
                         NormalizeXml = cbNormalize.Checked,
                     };
-                    OpenXmlPowerTools.MarkupSimplifier.SimplifyMarkup(doc, settings);
+                    OpenDocx.MarkupSimplifier.SimplifyMarkup(doc, settings);
                 }
             }
         }

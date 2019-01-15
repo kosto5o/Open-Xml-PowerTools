@@ -22,7 +22,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
 
-namespace OpenXmlPowerTools
+namespace OpenDocx
 {
     public class OpenXmlRegex
     {
@@ -185,7 +185,7 @@ namespace OpenXmlPowerTools
             if ((first.Name.Namespace == P.p) || (first.Name.Namespace == A.a))
             {
                 if (trackRevisions)
-                    throw new OpenXmlPowerToolsException("PPTX does not support revision tracking");
+                    throw new OpenDocxException("PPTX does not support revision tracking");
 
                 var counter = new ReplaceInternalInfo { Count = 0 };
                 foreach (XElement c in contentList)

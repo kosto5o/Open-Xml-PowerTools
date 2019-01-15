@@ -20,7 +20,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 
-namespace OpenXmlPowerTools.HtmlToWml.CSS
+namespace OpenDocx.HtmlToWml.CSS
 {
     public class CssAttribute
     {
@@ -1102,13 +1102,13 @@ namespace OpenXmlPowerTools.HtmlToWml.CSS
             {
                 switch (m_combinator.Value)
                 {
-                    case OpenXmlPowerTools.HtmlToWml.CSS.CssCombinator.PrecededImmediatelyBy: 
+                    case OpenDocx.HtmlToWml.CSS.CssCombinator.PrecededImmediatelyBy: 
                         sb.Append(" + "); 
                         break;
-                    case OpenXmlPowerTools.HtmlToWml.CSS.CssCombinator.ChildOf: 
+                    case OpenDocx.HtmlToWml.CSS.CssCombinator.ChildOf: 
                         sb.Append(" > "); 
                         break;
-                    case OpenXmlPowerTools.HtmlToWml.CSS.CssCombinator.PrecededBy: 
+                    case OpenDocx.HtmlToWml.CSS.CssCombinator.PrecededBy: 
                         sb.Append(" ~ "); 
                         break;
                 }
@@ -1456,7 +1456,7 @@ namespace OpenXmlPowerTools.HtmlToWml.CSS
                 sb.Append(m_val);
                 if (m_unit.HasValue)
                 {
-                    if (m_unit.Value == OpenXmlPowerTools.HtmlToWml.CSS.CssUnit.Percent)
+                    if (m_unit.Value == OpenDocx.HtmlToWml.CSS.CssUnit.Percent)
                     {
                         sb.Append("%");
                     }
@@ -1560,7 +1560,7 @@ namespace OpenXmlPowerTools.HtmlToWml.CSS
         {
             try
             {
-                if (t.Unit.HasValue && t.Unit.Value == OpenXmlPowerTools.HtmlToWml.CSS.CssUnit.Percent)
+                if (t.Unit.HasValue && t.Unit.Value == OpenDocx.HtmlToWml.CSS.CssUnit.Percent)
                 {
                     return (int)(255f * float.Parse(t.Value) / 100f);
                 }
@@ -1788,14 +1788,14 @@ namespace OpenXmlPowerTools.HtmlToWml.CSS
             {
                 return ParseStream(mem);
             }
-            catch (OpenXmlPowerToolsException e)
+            catch (OpenDocxException e)
             {
                 string msg = e.Message + ".  CSS => " + content;
-                throw new OpenXmlPowerToolsException(msg);
+                throw new OpenDocxException(msg);
             }
         }
 
-        // following method should be private, as it does not properly re-throw OpenXmlPowerToolsException
+        // following method should be private, as it does not properly re-throw OpenDocxException
         private CssDocument ParseStream(Stream stream)
         {
             Scanner scanner = new Scanner(stream);
@@ -2829,7 +2829,7 @@ namespace OpenXmlPowerTools.HtmlToWml.CSS
             ss = new CssSimpleSelector();
             ss.ElementName = "";
             string psd = null;
-            OpenXmlPowerTools.HtmlToWml.CSS.CssAttribute atb = null;
+            OpenDocx.HtmlToWml.CSS.CssAttribute atb = null;
             CssSimpleSelector parent = ss;
             string ident = null;
 
@@ -2941,9 +2941,9 @@ namespace OpenXmlPowerTools.HtmlToWml.CSS
             }
         }
 
-        void Attrib(out OpenXmlPowerTools.HtmlToWml.CSS.CssAttribute atb)
+        void Attrib(out OpenDocx.HtmlToWml.CSS.CssAttribute atb)
         {
-            atb = new OpenXmlPowerTools.HtmlToWml.CSS.CssAttribute();
+            atb = new OpenDocx.HtmlToWml.CSS.CssAttribute();
             atb.Value = "";
             string quote = null;
             string ident = null;
@@ -3506,29 +3506,29 @@ namespace OpenXmlPowerTools.HtmlToWml.CSS
                     break;
             }
             var errorString = string.Format(errMsgFormat, line, col, s);
-            throw new OpenXmlPowerToolsException(errorString);
+            throw new OpenDocxException(errorString);
         }
 
         public virtual void SemanticError(int line, int col, string s)
         {
             var errorString = string.Format(errMsgFormat, line, col, s);
-            throw new OpenXmlPowerToolsException(errorString);
+            throw new OpenDocxException(errorString);
         }
 
         public virtual void SemanticError(string s)
         {
-            throw new OpenXmlPowerToolsException(s);
+            throw new OpenDocxException(s);
         }
 
         public virtual void Warning(int line, int col, string s)
         {
             var errorString = string.Format(errMsgFormat, line, col, s);
-            throw new OpenXmlPowerToolsException(errorString);
+            throw new OpenDocxException(errorString);
         }
 
         public virtual void Warning(string s)
         {
-            throw new OpenXmlPowerToolsException(s);
+            throw new OpenDocxException(s);
         }
     }
 

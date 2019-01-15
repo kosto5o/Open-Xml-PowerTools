@@ -2,7 +2,7 @@
 using System.Diagnostics;
 using System.Text;
 
-namespace OpenXmlPowerTools
+namespace OpenDocx
 {
     internal class CorrelatedSequence
     {

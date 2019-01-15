@@ -7,7 +7,7 @@ using System.Text;
 using System.Xml.Linq;
 using DocumentFormat.OpenXml.Packaging;
 
-namespace OpenXmlPowerTools
+namespace OpenDocx
 {
     public static partial class WmlComparer
     {
@@ -373,7 +373,7 @@ namespace OpenXmlPowerTools
                     {
                         ComparisonUnitAtom firstContentAtom = cug.DescendantContentAtoms().FirstOrDefault();
                         if (firstContentAtom == null)
-                            throw new OpenXmlPowerToolsException("Internal error");
+                            throw new OpenDocxException("Internal error");
 
                         XElement tr = firstContentAtom
                             .AncestorElements
@@ -381,7 +381,7 @@ namespace OpenXmlPowerTools
                             .FirstOrDefault(a => a.Name == W.tr);
 
                         if (tr == null)
-                            throw new OpenXmlPowerToolsException("Internal error");
+                            throw new OpenDocxException("Internal error");
 
                         XElement trPr = tr.Element(W.trPr);
                         if (trPr == null)
@@ -474,7 +474,7 @@ namespace OpenXmlPowerTools
                         return comparisonUnitAtomList;
                     }
 
-                    throw new OpenXmlPowerToolsException("Internal error");
+                    throw new OpenDocxException("Internal error");
                 })
                 .SelectMany(m => m)
                 .ToList();
@@ -632,7 +632,7 @@ namespace OpenXmlPowerTools
                             {
                                 var thisUnid = (string) ae.Attribute(PtOpenXml.Unid);
                                 if (thisUnid == null)
-                                    throw new OpenXmlPowerToolsException("Internal error");
+                                    throw new OpenDocxException("Internal error");
 
                                 return thisUnid;
                             })
@@ -714,7 +714,7 @@ namespace OpenXmlPowerTools
                         {
                             var thisUnid = (string) ae.Attribute(PtOpenXml.Unid);
                             if (thisUnid == null)
-                                throw new OpenXmlPowerToolsException("Internal error");
+                                throw new OpenDocxException("Internal error");
 
                             return thisUnid;
                         })
@@ -786,7 +786,7 @@ namespace OpenXmlPowerTools
 
                     if (statusList.Count() > 1)
                     {
-                        throw new OpenXmlPowerToolsException(
+                        throw new OpenDocxException(
                             "Internal error - have both deleted and inserted text elements in the same run.");
                     }
 
@@ -859,7 +859,7 @@ namespace OpenXmlPowerTools
                     }
                     else
                     {
-                        throw new OpenXmlPowerToolsException("Internal error");
+                        throw new OpenDocxException("Internal error");
                     }
 
                     return pPr;
@@ -1076,7 +1076,7 @@ namespace OpenXmlPowerTools
                         XElement newContentElement = newTempElement.Descendants()
                             .FirstOrDefault(d => d.Name == W.footnote || d.Name == W.endnote);
                         if (newContentElement == null)
-                            throw new OpenXmlPowerToolsException("Internal error");
+                            throw new OpenDocxException("Internal error");
 
                         footnoteEndnoteAfter.ReplaceNodes(newContentElement.Nodes());
                     }
@@ -1177,7 +1177,7 @@ namespace OpenXmlPowerTools
                         .Descendants()
                         .FirstOrDefault(d => d.Name == W.footnote || d.Name == W.endnote);
                     if (newContentElement == null)
-                        throw new OpenXmlPowerToolsException("Internal error");
+                        throw new OpenDocxException("Internal error");
 
                     footnoteEndnoteAfter.ReplaceNodes(newContentElement.Nodes());
                 }
@@ -1278,14 +1278,14 @@ namespace OpenXmlPowerTools
                         XElement newContentElement = newTempElement.Descendants()
                             .FirstOrDefault(d => d.Name == W.footnote || d.Name == W.endnote);
                         if (newContentElement == null)
-                            throw new OpenXmlPowerToolsException("Internal error");
+                            throw new OpenDocxException("Internal error");
 
                         footnoteEndnoteBefore.ReplaceNodes(newContentElement.Nodes());
                     }
                 }
                 else
                 {
-                    throw new OpenXmlPowerToolsException("Internal error");
+                    throw new OpenDocxException("Internal error");
                 }
             }
         }
@@ -1371,7 +1371,7 @@ namespace OpenXmlPowerTools
                 }
 
                 if (footnote == null)
-                    throw new OpenXmlPowerToolsException("Internal error");
+                    throw new OpenDocxException("Internal error");
 
                 var cloned = new XElement(footnote);
                 cloned.Attribute(W.id).Value = newId;
@@ -1409,7 +1409,7 @@ namespace OpenXmlPowerTools
                 }
 
                 if (endnote == null)
-                    throw new OpenXmlPowerToolsException("Internal error");
+                    throw new OpenDocxException("Internal error");
 
                 var cloned = new XElement(endnote);
                 cloned.Attribute(W.id).Value = newId;
@@ -2541,7 +2541,7 @@ namespace OpenXmlPowerTools
                     .ToArray();
 
                 if (cs.ComparisonUnitArray1.Length != cs.ComparisonUnitArray2.Length)
-                    throw new OpenXmlPowerToolsException("Internal error");
+                    throw new OpenDocxException("Internal error");
 
                 newSequence.Add(cs);
             }
@@ -2944,7 +2944,7 @@ namespace OpenXmlPowerTools
                     }
 
                     if (takeThruName == null)
-                        throw new OpenXmlPowerToolsException("Internal error");
+                        throw new OpenDocxException("Internal error");
 
                     var relevantAncestors = new List<XElement>();
                     foreach (XElement ae in da1.First().AncestorElements)
@@ -2964,7 +2964,7 @@ namespace OpenXmlPowerTools
                         {
                             var unid = (string) a.Attribute(PtOpenXml.Unid);
                             if (unid == null)
-                                throw new OpenXmlPowerToolsException("Internal error");
+                                throw new OpenDocxException("Internal error");
 
                             return unid;
                         })
@@ -2988,7 +2988,7 @@ namespace OpenXmlPowerTools
                                 continue;
 
                             if (unid == null)
-                                throw new OpenXmlPowerToolsException("Internal error");
+                                throw new OpenDocxException("Internal error");
 
                             unid.Value = z.Unid;
                         }

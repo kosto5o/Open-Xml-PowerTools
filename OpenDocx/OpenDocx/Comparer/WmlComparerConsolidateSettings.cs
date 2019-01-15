@@ -1,4 +1,4 @@
-﻿namespace OpenXmlPowerTools
+﻿namespace OpenDocx
 {
     public class WmlComparerConsolidateSettings
     {

@@ -26,7 +26,7 @@ using System.Xml;
 using System.Xml.Linq;
 using DocumentFormat.OpenXml.Packaging;
 
-namespace OpenXmlPowerTools
+namespace OpenDocx
 {
     public class PtMainDocumentPart : XElement
     {
@@ -106,7 +106,7 @@ namespace OpenXmlPowerTools
                     {
                         XAttribute uriAttribute = replacementPart.Attribute(PtOpenXml.Uri);
                         if (uriAttribute == null)
-                            throw new OpenXmlPowerToolsException("Replacement part does not contain a Uri as an attribute");
+                            throw new OpenDocxException("Replacement part does not contain a Uri as an attribute");
                         String uri = uriAttribute.Value;
                         var part = package.GetParts().FirstOrDefault(p => p.Uri.ToString() == uri);
                         using (Stream partStream = part.GetStream(FileMode.Create, FileAccess.Write))

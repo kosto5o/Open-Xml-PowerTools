@@ -28,7 +28,7 @@ using System.Xml;
 using System.Xml.Linq;
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Validation;
-using OpenXmlPowerTools;
+using OpenDocx;
 using Xunit;
 using System.Text.RegularExpressions;
 
@@ -424,7 +424,7 @@ namespace OxPt
             HtmlToWmlConverterSettings settings = HtmlToWmlConverter.GetDefaultSettings();
             settings.BaseUriForImages = Path.Combine(TestUtil.TempDir.FullName);
 
-            Assert.Throws<OpenXmlPowerToolsException>(() => HtmlToWmlConverter.ConvertHtmlToWml(defaultCss, usedAuthorCss, userCss, html, settings, null, s_ProduceAnnotatedHtml ? annotatedHtmlFi.FullName : null));
+            Assert.Throws<OpenDocxException>(() => HtmlToWmlConverter.ConvertHtmlToWml(defaultCss, usedAuthorCss, userCss, html, settings, null, s_ProduceAnnotatedHtml ? annotatedHtmlFi.FullName : null));
         }
 
         private static void SaveValidateAndFormatMainDocPart(FileInfo destDocxFi, WmlDocument doc)

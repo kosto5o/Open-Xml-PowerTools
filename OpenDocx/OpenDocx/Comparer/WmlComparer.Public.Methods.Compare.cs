@@ -55,7 +55,7 @@ using DocumentFormat.OpenXml.Packaging;
 // or what not.  We don't need to be concerned about what the unids are for descendants of the paragraph.
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-namespace OpenXmlPowerTools
+namespace OpenDocx
 {
     public static partial class WmlComparer
     {

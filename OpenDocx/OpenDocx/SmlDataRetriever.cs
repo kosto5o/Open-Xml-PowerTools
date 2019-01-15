@@ -26,9 +26,9 @@ using System.Text;
 using System.Xml.Linq;
 using DocumentFormat.OpenXml.Packaging;
 using System.IO;
-using OpenXmlPowerTools;
+using OpenDocx;
 
-namespace OpenXmlPowerTools
+namespace OpenDocx
 {
     public class SmlDataRetriever
     {

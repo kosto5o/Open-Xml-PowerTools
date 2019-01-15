@@ -120,12 +120,12 @@ using System.Linq;
 using System.Text;
 using System.Xml.Linq;
 using DocumentFormat.OpenXml.Packaging;
-using OpenXmlPowerTools;
-using OpenXmlPowerTools.HtmlToWml;
-using OpenXmlPowerTools.HtmlToWml.CSS;
+using OpenDocx;
+using OpenDocx.HtmlToWml;
+using OpenDocx.HtmlToWml.CSS;
 using System.Text.RegularExpressions;
 
-namespace OpenXmlPowerTools.HtmlToWml
+namespace OpenDocx.HtmlToWml
 {
     public class ElementToStyleMap
     {
@@ -242,7 +242,7 @@ namespace OpenXmlPowerTools.HtmlToWml
                 int numberPseudoToAdd = (int)rowSpanCell.Attribute(XhtmlNoNamespace.rowspan) - 1;
                 var tr = rowSpanCell.Ancestors(XhtmlNoNamespace.tr).FirstOrDefault();
                 if (tr == null)
-                    throw new OpenXmlPowerToolsException("Invalid HTML - td does not have parent tr");
+                    throw new OpenDocxException("Invalid HTML - td does not have parent tr");
                 var rowsToAddTo = tr
                     .ElementsAfterSelf(XhtmlNoNamespace.tr)
                     .Take(numberPseudoToAdd)
@@ -1156,7 +1156,7 @@ namespace OpenXmlPowerTools.HtmlToWml
             var fontName = (string)r.Attribute(PtOpenXml.FontName) ??
                (string)r.Ancestors(W.p).First().Attribute(PtOpenXml.FontName);
             if (fontName == null)
-                throw new OpenXmlPowerToolsException("Internal Error, should have FontName attribute");
+                throw new OpenDocxException("Internal Error, should have FontName attribute");
             if (UnknownFonts.Contains(fontName))
                 return 0;
 

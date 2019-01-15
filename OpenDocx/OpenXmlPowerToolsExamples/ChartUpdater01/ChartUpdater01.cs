@@ -4,9 +4,9 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using DocumentFormat.OpenXml.Packaging;
-using OpenXmlPowerTools;
+using OpenDocx;
 
-namespace OpenXmlPowerTools
+namespace OpenDocx
 {
     class Program
     {

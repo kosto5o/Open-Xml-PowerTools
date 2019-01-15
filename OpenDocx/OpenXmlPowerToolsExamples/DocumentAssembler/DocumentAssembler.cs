@@ -2,7 +2,7 @@
 using System.IO;
 using System.Xml.Linq;
 
-namespace OpenXmlPowerTools
+namespace OpenDocx
 {
     class Program
     {

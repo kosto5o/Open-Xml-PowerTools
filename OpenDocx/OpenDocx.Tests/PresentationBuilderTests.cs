@@ -27,7 +27,7 @@ using System.Threading.Tasks;
 using System.Xml.Linq;
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Validation;
-using OpenXmlPowerTools;
+using OpenDocx;
 using Xunit;
 
 #if !ELIDE_XUNIT_TESTS

@@ -28,7 +28,7 @@ using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Validation;
 using System.Globalization;
 
-namespace OpenXmlPowerTools
+namespace OpenDocx
 {
     public class MetricsGetterSettings
     {
@@ -88,7 +88,7 @@ namespace OpenXmlPowerTools
                     }
                 }
             }
-            catch (OpenXmlPowerToolsException e)
+            catch (OpenDocxException e)
             {
                 if (e.ToString().Contains("Invalid Hyperlink"))
                 {

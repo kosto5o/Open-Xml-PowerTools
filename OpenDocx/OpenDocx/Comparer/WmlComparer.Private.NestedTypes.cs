@@ -1,7 +1,7 @@
 ﻿using System.Drawing;
 using System.Xml.Linq;
 
-namespace OpenXmlPowerTools
+namespace OpenDocx
 {
     public static partial class WmlComparer
     {

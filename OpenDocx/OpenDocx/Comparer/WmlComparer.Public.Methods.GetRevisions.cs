@@ -6,7 +6,7 @@ using System.Text;
 using System.Xml.Linq;
 using DocumentFormat.OpenXml.Packaging;
 
-namespace OpenXmlPowerTools
+namespace OpenDocx
 {
     public static partial class WmlComparer
     {
@@ -130,7 +130,7 @@ namespace OpenXmlPowerTools
 
             XDocument xDoc = footnotesEndnotesPart.GetXDocument();
             IEnumerable<XElement> footnotesEndnotes =
-                xDoc.Root?.Elements(footnoteEndnoteElementName) ?? throw new OpenXmlPowerToolsException("Invalid document.");
+                xDoc.Root?.Elements(footnoteEndnoteElementName) ?? throw new OpenDocxException("Invalid document.");
 
             var revisionsForPart = new List<WmlComparerRevision>();
             foreach (XElement fn in footnotesEndnotes)

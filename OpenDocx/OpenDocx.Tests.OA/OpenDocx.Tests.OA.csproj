@@ -9,7 +9,7 @@
     <ProjectGuid>{2C50A5AF-E34B-4FC4-983F-F30BB49A57AB}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>OpenXmlPowerTools.Tests.OA</RootNamespace>
+    <RootNamespace>OpenDocx.Tests.OA</RootNamespace>
     <AssemblyName>OpenDocx.Tests.OA</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
@@ -89,7 +89,7 @@
   <ItemGroup>
     <ProjectReference Include="..\OpenDocx\OpenDocx.csproj">
       <Project>{6f957ff3-afcc-4d69-8fbc-71ae21bc45c9}</Project>
-      <Name>OpenXmlPowerTools</Name>
+      <Name>OpenDocx</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

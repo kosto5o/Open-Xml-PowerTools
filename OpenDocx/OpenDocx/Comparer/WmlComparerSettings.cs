@@ -2,7 +2,7 @@
 using System.Globalization;
 using System.IO;
 
-namespace OpenXmlPowerTools
+namespace OpenDocx
 {
     public class WmlComparerSettings
     {

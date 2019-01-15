@@ -27,7 +27,7 @@ using System.Threading.Tasks;
 using System.Xml.Linq;
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Validation;
-using OpenXmlPowerTools;
+using OpenDocx;
 using Xunit;
 using System.Diagnostics;
 
@@ -829,7 +829,7 @@ namespace OxPt
             WmlDocument source1Wml = new WmlDocument(source1CopiedToDestDocx.FullName);
             WmlDocument source2Wml = new WmlDocument(source2CopiedToDestDocx.FullName);
             WmlComparerSettings settings = new WmlComparerSettings();
-            Assert.Throws<OpenXmlPowerToolsException>(() =>
+            Assert.Throws<OpenDocxException>(() =>
                 {
                     WmlDocument comparedWml = WmlComparer.Compare(source1Wml, source2Wml, settings);
                 });

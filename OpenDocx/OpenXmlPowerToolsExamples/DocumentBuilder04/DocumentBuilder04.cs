@@ -6,7 +6,7 @@ using System.IO;
 using System.Xml;
 using System.Xml.Linq;
 using DocumentFormat.OpenXml.Packaging;
-using OpenXmlPowerTools;
+using OpenDocx;
 
 namespace ExampleDocumentBuilder04
 {

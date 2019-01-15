@@ -23,7 +23,7 @@ using System.Linq;
 using System.Xml.Linq;
 using DocumentFormat.OpenXml.Packaging;
 
-namespace OpenXmlPowerTools
+namespace OpenDocx
 {
     class ReverseRevisionsInfo
     {
@@ -1420,7 +1420,7 @@ namespace OpenXmlPowerTools
                                     return g.Select(gc => FixUpDeletedOrInsertedFieldCodesTransform(gc.Ele));
                                 }
                             }
-                            throw new OpenXmlPowerToolsException("Internal error");
+                            throw new OpenDocxException("Internal error");
                         });
 
                     var newParagraph = new XElement(W.p,

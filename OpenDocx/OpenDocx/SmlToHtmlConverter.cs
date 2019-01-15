@@ -27,7 +27,7 @@ using System.Xml.Linq;
 using DocumentFormat.OpenXml.Packaging;
 using System.IO;
 
-namespace OpenXmlPowerTools
+namespace OpenDocx
 {
     public partial class SmlDocument
     {

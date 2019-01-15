@@ -15,7 +15,7 @@ using DocumentFormat.OpenXml;
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Wordprocessing;
 
-namespace OpenXmlPowerTools.Tests
+namespace OpenDocx.Tests
 {
     /// <summary>
     /// Base class for unit tests providing utility methods.

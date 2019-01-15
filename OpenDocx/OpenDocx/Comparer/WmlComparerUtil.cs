@@ -2,7 +2,7 @@
 using System.Security.Cryptography;
 using System.Text;
 
-namespace OpenXmlPowerTools
+namespace OpenDocx
 {
     internal static class WmlComparerUtil
     {

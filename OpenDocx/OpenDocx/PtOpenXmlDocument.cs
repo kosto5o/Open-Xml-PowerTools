@@ -68,7 +68,7 @@ using System.Xml.Linq;
 using System.IO.Packaging;
 using DocumentFormat.OpenXml.Packaging;
 
-namespace OpenXmlPowerTools
+namespace OpenDocx
 {
     public class PowerToolsDocumentException : Exception
     {

@@ -26,7 +26,7 @@ using System.Xml.Linq;
 using System.Xml.Schema;
 using DocumentFormat.OpenXml.Packaging;
 
-namespace OpenXmlPowerTools
+namespace OpenDocx
 {
     public partial class WmlDocument
     {
@@ -173,7 +173,7 @@ namespace OpenXmlPowerTools
         public static void TransformToSingleCharacterRuns(WordprocessingDocument doc)
         {
             if (RevisionAccepter.HasTrackedRevisions(doc))
-                throw new OpenXmlPowerToolsException(
+                throw new OpenDocxException(
                     "Transforming a document to single character runs is not supported for " +
                     "a document with tracked revisions.");
 

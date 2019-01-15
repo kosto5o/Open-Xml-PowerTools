@@ -30,7 +30,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using DocumentFormat.OpenXml.Packaging;
-using OpenXmlPowerTools;
+using OpenDocx;
 using Xunit;
 
 #if DO_CONVERSION_VIA_WORD

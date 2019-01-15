@@ -22,7 +22,7 @@ using System.Xml.Linq;
 using DocumentFormat.OpenXml.Packaging;
 using System.Drawing;
 
-namespace OpenXmlPowerTools
+namespace OpenDocx
 {
     public class ContentTypeRule
     {
@@ -184,7 +184,7 @@ namespace OpenXmlPowerTools
                     var ruleToUpdate = rules
                         .FirstOrDefault(r => r.ContentType == ct);
                     if (ruleToUpdate == null)
-                        throw new OpenXmlPowerToolsException("ContentTypeRexexExtension refers to content type that does not exist");
+                        throw new OpenDocxException("ContentTypeRexexExtension refers to content type that does not exist");
                     var oldRegexRules = ruleToUpdate.RegexArray.ToList();
                     var newRegexRules = ext.Elements("RegexExtension").Elements("Regex").Select(z => new Regex(z.Value)).ToArray();
                     var regexArray = oldRegexRules.Concat(newRegexRules).ToArray();
@@ -341,7 +341,7 @@ namespace OpenXmlPowerTools
 
             var body = mainXDoc.Root.Descendants(W.body).FirstOrDefault();
             if (body == null)
-                throw new OpenXmlPowerToolsException("Internal error: invalid document");
+                throw new OpenDocxException("Internal error: invalid document");
 
             var contentList = body.Elements()
                 .Where(e => e.Attribute(PtOpenXml.Level) != null)
@@ -377,7 +377,7 @@ namespace OpenXmlPowerTools
                 .Elements()
                 .FirstOrDefault(e => (bool)e.Attribute("IsRoot"));
             if (rootElement == null)
-                throw new OpenXmlPowerToolsException("Invalid content type hierarchy definition - no root element");
+                throw new OpenDocxException("Invalid content type hierarchy definition - no root element");
             stack.Push(rootElement);
 
             var currentlyLookingAt = hierarchyDefinition.Element(rootElement.Name);
@@ -385,7 +385,7 @@ namespace OpenXmlPowerTools
             foreach (var item in contentTypeXml.Elements())
             {
                 if (!hierarchyElements.Contains(item.Name))
-                    throw new OpenXmlPowerToolsException(string.Format("Invalid Content Type Hierarchy Definition - missing def for {0}", item.Name));
+                    throw new OpenDocxException(string.Format("Invalid Content Type Hierarchy Definition - missing def for {0}", item.Name));
 
                 bool found = false;
                 var possibleChildItem = currentlyLookingAt.Element(item.Name);
@@ -462,7 +462,7 @@ namespace OpenXmlPowerTools
                             break;
                         }
                         if (stack.Count() == 0)
-                            throw new OpenXmlPowerToolsException("Internal error = reached top of hierarchy - prob not an internal error - some other error");
+                            throw new OpenDocxException("Internal error = reached top of hierarchy - prob not an internal error - some other error");
                     }
                     continue;
                 }
@@ -505,7 +505,7 @@ namespace OpenXmlPowerTools
                 });
 
             if (theOne == null)
-                throw new OpenXmlPowerToolsException("Internal error");
+                throw new OpenDocxException("Internal error");
 
             return theOne;
         }
@@ -521,7 +521,7 @@ namespace OpenXmlPowerTools
             foreach (var item in list)
             {
                 if (item.Attribute(PtOpenXml.IndentLevel) == null)
-                    throw new OpenXmlPowerToolsException(string.Format("Invalid Content Type Hierarchy Definition - missing def for {0}", item.Name));
+                    throw new OpenDocxException(string.Format("Invalid Content Type Hierarchy Definition - missing def for {0}", item.Name));
                 if ((int)item.Attribute(PtOpenXml.IndentLevel) == level)
                 {
                     currentGroupingKey += 1;
@@ -644,7 +644,7 @@ namespace OpenXmlPowerTools
                         .FirstOrDefault();
 
                     if (para == null)
-                        throw new OpenXmlPowerToolsException("Internal error - invalid document");
+                        throw new OpenDocxException("Internal error - invalid document");
 
                     // if already processed
                     if (para.Descendants(W.r).Any(r => r.Attribute(PtOpenXml.ListItemRun) != null))
@@ -979,7 +979,7 @@ namespace OpenXmlPowerTools
                     }
                     else
                     {
-                        throw new OpenXmlPowerToolsException("Entry for Run content type in XML generation lambdas is required");
+                        throw new OpenDocxException("Entry for Run content type in XML generation lambdas is required");
                     }
                 }
 
@@ -993,7 +993,7 @@ namespace OpenXmlPowerTools
                     }
                     else
                     {
-                        throw new OpenXmlPowerToolsException("Entry for Hyperlink content type in XML generation lambdas is required");
+                        throw new OpenDocxException("Entry for Hyperlink content type in XML generation lambdas is required");
                     }
                 }
 
@@ -1363,7 +1363,7 @@ namespace OpenXmlPowerTools
                             continue;
 
                         if (rule.RegexArray != null)
-                            throw new OpenXmlPowerToolsException("Invalid Run ContentType Rule - Regex not allowed");
+                            throw new OpenDocxException("Invalid Run ContentType Rule - Regex not allowed");
                         if (rule.MatchLambda != null)
                         {
                             if (rule.MatchLambda(rlc, rule, wDoc, settings))

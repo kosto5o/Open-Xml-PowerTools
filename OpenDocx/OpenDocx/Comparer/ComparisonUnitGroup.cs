@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Xml.Linq;
 
-namespace OpenXmlPowerTools
+namespace OpenDocx
 {
     internal class ComparisonUnitGroup : ComparisonUnit
     {
@@ -24,7 +24,7 @@ namespace OpenXmlPowerTools
                 .ToArray();
 
             XElement ancestor = ancestorsToLookAt[level];
-            if (ancestor == null) throw new OpenXmlPowerToolsException("Internal error: ComparisonUnitGroup");
+            if (ancestor == null) throw new OpenDocxException("Internal error: ComparisonUnitGroup");
 
             SHA1Hash = (string) ancestor.Attribute(PtOpenXml.SHA1Hash);
             CorrelatedSHA1Hash = (string) ancestor.Attribute(PtOpenXml.CorrelatedSHA1Hash);
@@ -50,7 +50,7 @@ namespace OpenXmlPowerTools
 
                 if (!(thisGroup is ComparisonUnitWord tw))
                 {
-                    throw new OpenXmlPowerToolsException("Internal error: GetFirstComparisonUnitAtomOfGroup");
+                    throw new OpenDocxException("Internal error: GetFirstComparisonUnitAtomOfGroup");
                 }
 
                 var ca = (ComparisonUnitAtom) tw.Contents.First();

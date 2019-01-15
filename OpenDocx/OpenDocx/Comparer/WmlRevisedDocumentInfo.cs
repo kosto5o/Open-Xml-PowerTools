@@ -1,6 +1,6 @@
 ﻿using System.Drawing;
 
-namespace OpenXmlPowerTools
+namespace OpenDocx
 {
     public class WmlRevisedDocumentInfo
     {

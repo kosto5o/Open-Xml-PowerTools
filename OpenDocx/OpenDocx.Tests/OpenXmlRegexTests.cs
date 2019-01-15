@@ -9,7 +9,7 @@ using Xunit;
 
 #if !ELIDE_XUNIT_TESTS
 
-namespace OpenXmlPowerTools.Tests
+namespace OpenDocx.Tests
 {
     public class OpenXmlRegexTests
     {

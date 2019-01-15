@@ -28,7 +28,7 @@ using System.Xml;
 using System.Xml.Linq;
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Validation;
-using OpenXmlPowerTools;
+using OpenDocx;
 using Xunit;
 
 #if !ELIDE_XUNIT_TESTS
@@ -197,7 +197,7 @@ namespace OxPt
 
             bool returnedTemplateError;
             WmlDocument afterAssembling;
-            Assert.Throws<OpenXmlPowerToolsException>(() =>
+            Assert.Throws<OpenDocxException>(() =>
                 {
                     afterAssembling = DocumentAssembler.AssembleDocument(wmlTemplate, xmldata, out returnedTemplateError);
                 });

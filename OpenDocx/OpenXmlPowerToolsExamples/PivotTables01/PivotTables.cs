@@ -7,7 +7,7 @@ using System.Xml.Linq;
 using System.IO;
 using System.Timers;
 using DocumentFormat.OpenXml.Packaging;
-using OpenXmlPowerTools;
+using OpenDocx;
 
 namespace ExamplePivotTables
 {

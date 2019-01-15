@@ -37,7 +37,7 @@ using System.Text;
 using System.Xml.Linq;
 using DocumentFormat.OpenXml.Packaging;
 
-namespace OpenXmlPowerTools
+namespace OpenDocx
 {
     public class ListItemRetrieverSettings
     {
@@ -375,7 +375,7 @@ namespace OpenXmlPowerTools
                 paragraph.AddAnnotation(pi);
                 return;
             }
-            throw new OpenXmlPowerToolsException("Internal error - should never set ilvl more than once.");
+            throw new OpenDocxException("Internal error - should never set ilvl more than once.");
         }
 
         public static int GetParagraphLevel(XElement paragraph)
@@ -383,7 +383,7 @@ namespace OpenXmlPowerTools
             var pi = paragraph.Annotation<ParagraphInfo>();
             if (pi != null)
                 return pi.Ilvl;
-            throw new OpenXmlPowerToolsException("Internal error - should never ask for ilvl without it first being set.");
+            throw new OpenDocxException("Internal error - should never ask for ilvl without it first being set.");
         }
 
         public static ListItemInfo GetListItemInfo(XDocument numXDoc, XDocument stylesXDoc, XElement paragraph)
@@ -393,7 +393,7 @@ namespace OpenXmlPowerTools
             ListItemInfo listItemInfo = paragraph.Annotation<ListItemInfo>();
             if (listItemInfo != null)
                 return listItemInfo;
-            throw new OpenXmlPowerToolsException("Attempting to retrieve ListItemInfo before initialization");
+            throw new OpenDocxException("Attempting to retrieve ListItemInfo before initialization");
         }
 
         private static ListItemInfo NotAListItem = new ListItemInfo(false, true);
@@ -796,7 +796,7 @@ namespace OpenXmlPowerTools
 
             var levelNumbersAnnotation = paragraph.Annotation<LevelNumbers>();
             if (levelNumbersAnnotation == null)
-                throw new OpenXmlPowerToolsException("Internal error");
+                throw new OpenDocxException("Internal error");
 
             int[] levelNumbers = levelNumbersAnnotation.LevelNumbersArray;
             string languageIdentifier = GetLanguageIdentifier(paragraph, stylesXDoc);

@@ -24,7 +24,7 @@ using System.Xml.Linq;
 using System.Xml.XPath;
 using DocumentFormat.OpenXml.Packaging;
 
-namespace OpenXmlPowerTools
+namespace OpenDocx
 {
     public partial class WmlDocument : OpenXmlPowerToolsDocument
     {
@@ -138,7 +138,7 @@ namespace OpenXmlPowerTools
             namespaceManager.AddNamespace("w", "http://schemas.openxmlformats.org/wordprocessingml/2006/main");
             XElement addBefore = mainXDoc.XPathSelectElement(xPath, namespaceManager);
             if (addBefore == null)
-                throw new OpenXmlPowerToolsException("XPath expression did not select an element");
+                throw new OpenDocxException("XPath expression did not select an element");
 
             addBefore.AddBeforeSelf(sdt);
             doc.MainDocumentPart.PutXDocument();
@@ -213,7 +213,7 @@ namespace OpenXmlPowerTools
             namespaceManager.AddNamespace("w", "http://schemas.openxmlformats.org/wordprocessingml/2006/main");
             XElement addBefore = mainXDoc.XPathSelectElement(xPath, namespaceManager);
             if (addBefore == null)
-                throw new OpenXmlPowerToolsException("XPath expression did not select an element");
+                throw new OpenDocxException("XPath expression did not select an element");
 
             addBefore.AddBeforeSelf(paragraph);
             doc.MainDocumentPart.PutXDocument();
@@ -299,7 +299,7 @@ namespace OpenXmlPowerTools
             namespaceManager.AddNamespace("w", "http://schemas.openxmlformats.org/wordprocessingml/2006/main");
             XElement addBefore = mainXDoc.XPathSelectElement(xPath, namespaceManager);
             if (addBefore == null)
-                throw new OpenXmlPowerToolsException("XPath expression did not select an element");
+                throw new OpenDocxException("XPath expression did not select an element");
 
             addBefore.AddBeforeSelf(paragraph);
             doc.MainDocumentPart.PutXDocument();
