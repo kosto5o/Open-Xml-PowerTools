@@ -52,6 +52,8 @@ namespace OpenDocx
                     if (RevisionAccepter.HasTrackedRevisions(wordDoc))
                         throw new OpenDocxException("Invalid DocumentAssembler template - contains tracked revisions");
 
+                    SimplifyTemplateMarkup(wordDoc);
+
                     var te = new TemplateError();
                     foreach (var part in wordDoc.ContentParts())
                     {
@@ -62,6 +64,29 @@ namespace OpenDocx
                 WmlDocument assembledDocument = new WmlDocument("TempFileName.docx", mem.ToArray());
                 return assembledDocument;
             }
+        }
+
+        private static void SimplifyTemplateMarkup(WordprocessingDocument wordDoc)
+        {
+            // strip down the template to eliminate unnecessary work
+            SimplifyMarkupSettings settings = new SimplifyMarkupSettings
+            {
+                RemoveComments = true,
+                RemoveContentControls = false,
+                RemoveEndAndFootNotes = false,
+                RemoveFieldCodes = false,
+                RemoveLastRenderedPageBreak = false,
+                RemovePermissions = false,
+                RemoveProofingErrors = true,
+                RemoveSuppressProofing = false,
+                RemoveRsidInfo = true,
+                RemoveSmartTags = true,
+                RemoveSoftHyphens = false,
+                ReplaceTabsWithSpaces = false,
+                RemoveMarkupForDocumentComparison = true,
+                RemoveWebHidden = true
+            };
+            MarkupSimplifier.SimplifyMarkup(wordDoc, settings);
         }
 
         private static void ProcessTemplatePart(XElement data, TemplateError te, OpenXmlPart part)
