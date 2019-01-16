@@ -30,7 +30,25 @@ namespace OpenDocx
 {
     public class DocumentAssemblerBase
     {
-        protected static bool AssembleDocument(WordprocessingDocument wordDoc, IDataContext data)
+        protected static bool AssembleDocument(WordprocessingDocument wordDoc, IDataContext data, bool preprocessed = false)
+        {
+            if (!preprocessed)
+            {
+                if (RevisionAccepter.HasTrackedRevisions(wordDoc))
+                    throw new OpenDocxException("Invalid DocumentAssembler template - contains tracked revisions");
+
+                SimplifyTemplateMarkup(wordDoc);
+            }
+
+            var te = new TemplateError();
+            foreach (var part in wordDoc.ContentParts())
+            {
+                ProcessTemplatePart(data, te, part, preprocessed);
+            }
+            return te.HasError;
+        }
+
+        public static bool PrepareTemplate(WordprocessingDocument wordDoc, IMetadataParser fieldParser)
         {
             if (RevisionAccepter.HasTrackedRevisions(wordDoc))
                 throw new OpenDocxException("Invalid DocumentAssembler template - contains tracked revisions");
@@ -40,7 +58,9 @@ namespace OpenDocx
             var te = new TemplateError();
             foreach (var part in wordDoc.ContentParts())
             {
-                ProcessTemplatePart(data, te, part);
+                XDocument xDoc = part.GetXDocument();
+                xDoc.Elements().First().ReplaceWith(PrepareTemplatePart(fieldParser, te, xDoc.Root));
+                part.PutXDocument();
             }
             return te.HasError;
         }
@@ -91,10 +111,10 @@ namespace OpenDocx
             return xDocRoot;
         }
 
-        private static void ProcessTemplatePart(IDataContext data, TemplateError te, OpenXmlPart part)
+        private static void ProcessTemplatePart(IDataContext data, TemplateError te, OpenXmlPart part, bool preprocessed)
         {
             XDocument xDoc = part.GetXDocument();
-            XElement xDocRoot = PrepareTemplatePart(data, te, xDoc.Root);
+            XElement xDocRoot = preprocessed ? xDoc.Root : PrepareTemplatePart(data, te, xDoc.Root);
 
             // do the actual content replacement
             xDocRoot = (XElement)ContentReplacementTransform(xDocRoot, data, te);
