@@ -704,6 +704,7 @@ namespace OpenDocx
                                 .Elements()
                                 .Select(e => ContentReplacementTransform(e, d, templateError))
                                 .ToList();
+                            d.Release();
                             return content;
                         })
                         .ToList();
@@ -739,7 +740,8 @@ namespace OpenDocx
                         table.Elements().Where(e => e.Name != W.tr),
                         table.Elements(W.tr).FirstOrDefault(),
                         tableData.Select(d =>
-                            new XElement(W.tr,
+                        {
+                            var content = new XElement(W.tr,
                                 protoRow.Elements().Where(r => r.Name != W.tc),
                                 protoRow.Elements(W.tc)
                                     .Select(tc =>
@@ -770,9 +772,12 @@ namespace OpenDocx
                                                            cellRun != null ? cellRun.Element(W.rPr) : new XElement(W.rPr),  //if the cell was empty there is no cellrun
                                                            new XElement(W.t, newValue))));
                                         return newCell;
-                                    }))),
-                                    footerRows
-                                    );
+                                    }));
+                            d.Release();
+                            return content;
+                        }),
+                        footerRows
+                        );
                     return newTable;
                 }
                 if (element.Name == PA.Conditional)

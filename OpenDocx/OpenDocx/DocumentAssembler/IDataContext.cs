@@ -10,6 +10,7 @@ namespace OpenDocx
     {
         string EvaluateText(string selector, bool optional);
         IDataContext[] EvaluateList(string selector);
+        void Release();
     }
 
     public class EvaluationException : Exception

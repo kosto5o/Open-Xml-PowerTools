@@ -146,5 +146,10 @@ namespace OpenDocx
             return xPathSelectResult.ToString();
 
         }
+
+        public void Release()
+        {
+            _element = null;
+        }
     }
 }
