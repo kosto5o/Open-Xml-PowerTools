@@ -33,37 +33,21 @@ using System.Collections;
 
 namespace OpenDocx
 {
-    public class DocumentAssembler
+    public class DocumentAssemblerBase
     {
-        public static WmlDocument AssembleDocument(WmlDocument templateDoc, XmlDocument data, out bool templateError)
+        protected static bool AssembleDocument(WordprocessingDocument wordDoc, IDataContext data)
         {
-            XDocument xDoc = data.GetXDocument();
-            return AssembleDocument(templateDoc, xDoc.Root, out templateError);
-        }
+            if (RevisionAccepter.HasTrackedRevisions(wordDoc))
+                throw new OpenDocxException("Invalid DocumentAssembler template - contains tracked revisions");
 
-        public static WmlDocument AssembleDocument(WmlDocument templateDoc, XElement data, out bool templateError)
-        {
-            byte[] byteArray = templateDoc.DocumentByteArray;
-            using (MemoryStream mem = new MemoryStream())
+            SimplifyTemplateMarkup(wordDoc);
+
+            var te = new TemplateError();
+            foreach (var part in wordDoc.ContentParts())
             {
-                mem.Write(byteArray, 0, (int)byteArray.Length);
-                using (WordprocessingDocument wordDoc = WordprocessingDocument.Open(mem, true))
-                {
-                    if (RevisionAccepter.HasTrackedRevisions(wordDoc))
-                        throw new OpenDocxException("Invalid DocumentAssembler template - contains tracked revisions");
-
-                    SimplifyTemplateMarkup(wordDoc);
-
-                    var te = new TemplateError();
-                    foreach (var part in wordDoc.ContentParts())
-                    {
-                        ProcessTemplatePart(data, te, part);
-                    }
-                    templateError = te.HasError;
-                }
-                WmlDocument assembledDocument = new WmlDocument("TempFileName.docx", mem.ToArray());
-                return assembledDocument;
+                ProcessTemplatePart(data, te, part);
             }
+            return te.HasError;
         }
 
         private static void SimplifyTemplateMarkup(WordprocessingDocument wordDoc)
@@ -89,11 +73,9 @@ namespace OpenDocx
             MarkupSimplifier.SimplifyMarkup(wordDoc, settings);
         }
 
-        private static void ProcessTemplatePart(XElement data, TemplateError te, OpenXmlPart part)
+        private static XElement PrepareTemplatePart(IMetadataParser data, TemplateError te, XElement xDocRoot)
         {
-            XDocument xDoc = part.GetXDocument();
-
-            var xDocRoot = RemoveGoBackBookmarks(xDoc.Root);
+            xDocRoot = RemoveGoBackBookmarks(xDoc.Root);
 
             // content controls in cells can surround the W.tc element, so transform so that such content controls are within the cell content
             xDocRoot = (XElement)NormalizeContentControlsInCells(xDocRoot);
@@ -110,6 +92,14 @@ namespace OpenDocx
 
             // any EndRepeat, EndConditional that remain are orphans, so replace with an error
             ProcessOrphanEndRepeatEndConditional(xDocRoot, te);
+
+            return xDocRoot;
+        }
+
+        private static void ProcessTemplatePart(IDataContext data, TemplateError te, OpenXmlPart part)
+        {
+            XDocument xDoc = part.GetXDocument();
+            XElement xDocRoot = PrepareTemplatePart(data, te, xDoc.Root);
 
             // do the actual content replacement
             xDocRoot = (XElement)ContentReplacementTransform(xDocRoot, data, te);
@@ -332,7 +322,7 @@ namespace OpenDocx
             "EndConditional",
         };
 
-        private static object TransformToMetadata(XNode node, XElement data, TemplateError te)
+        private static object TransformToMetadata(XNode node, IMetadataParser parser, TemplateError te)
         {
             XElement element = node as XElement;
             if (element != null)
@@ -350,9 +340,9 @@ namespace OpenDocx
                             .Trim()
                             .Replace('“', '"')
                             .Replace('”', '"');
-                        if (ccContents.StartsWith("<"))
+                        if (ccContents.StartsWith(parser.DelimiterOpen))
                         {
-                            XElement xml = TransformXmlTextToMetadata(te, ccContents);
+                            XElement xml = TransformContentToMetadata(te, ccContents, parser);
                             if (xml.Name == W.p || xml.Name == W.r)  // this means there was an error processing the XML.
                             {
                                 if (element.Parent.Name == W.p)
@@ -371,11 +361,11 @@ namespace OpenDocx
                         }
                         return new XElement(element.Name,
                             element.Attributes(),
-                            element.Nodes().Select(n => TransformToMetadata(n, data, te)));
+                            element.Nodes().Select(n => TransformToMetadata(n, parser, te)));
                     }
                     return new XElement(element.Name,
                         element.Attributes(),
-                        element.Nodes().Select(n => TransformToMetadata(n, data, te)));
+                        element.Nodes().Select(n => TransformToMetadata(n, parser, te)));
                 }
                 if (element.Name == W.p)
                 {
@@ -385,21 +375,21 @@ namespace OpenDocx
                         .Select(t => (string)t)
                         .StringConcatenate()
                         .Trim();
-                    int occurances = paraContents.Select((c, i) => paraContents.Substring(i)).Count(sub => sub.StartsWith("<#"));
-                    if (paraContents.StartsWith("<#") && paraContents.EndsWith("#>") && occurances == 1)
+                    int occurances = paraContents.Select((c, i) => paraContents.Substring(i)).Count(sub => sub.StartsWith(parser.EmbedOpen));
+                    if (paraContents.StartsWith(parser.EmbedOpen) && paraContents.EndsWith(parser.EmbedClose) && occurances == 1)
                     {
-                        var xmlText = paraContents.Substring(2, paraContents.Length - 4).Trim();
-                        XElement xml = TransformXmlTextToMetadata(te, xmlText);
+                        var xmlText = paraContents.Substring(parser.EmbedOpen.Length, paraContents.Length - parser.EmbedOpen.Length - parser.EmbedClose.Length).Trim();
+                        XElement xml = TransformContentToMetadata(te, xmlText, parser);
                         if (xml.Name == W.p || xml.Name == W.r)
                             return xml;
                         xml.Add(element);
                         return xml;
                     }
-                    if (paraContents.Contains("<#"))
+                    if (paraContents.Contains(parser.EmbedOpen))
                     {
                         List<RunReplacementInfo> runReplacementInfo = new List<RunReplacementInfo>();
                         var thisGuid = Guid.NewGuid().ToString();
-                        var r = new Regex("<#.*?#>");
+                        var r = new Regex(Regex.Escape(parser.EmbedOpen) + ".*?" + Regex.Escape(parser.EmbedClose));
                         XElement xml = null;
                         OpenXmlRegex.Replace(new[] { element }, r, thisGuid, (para, match) =>
                         {
@@ -407,14 +397,14 @@ namespace OpenDocx
                             var xmlText = matchString.Substring(2, matchString.Length - 4).Trim().Replace('“', '"').Replace('”', '"');
                             try
                             {
-                                xml = XElement.Parse(xmlText);
+                                xml = parser.TransformContentToMetadata(xmlText);
                             }
-                            catch (XmlException e)
+                            catch (MetadataParseException e)
                             {
                                 RunReplacementInfo rri = new RunReplacementInfo()
                                 {
                                     Xml = null,
-                                    XmlExceptionMessage = "XmlException: " + e.Message,
+                                    ParseExceptionMessage = "ParseException: " + e.Message,
                                     SchemaValidationMessage = null,
                                 };
                                 runReplacementInfo.Add(rri);
@@ -426,7 +416,7 @@ namespace OpenDocx
                                 RunReplacementInfo rri = new RunReplacementInfo()
                                 {
                                     Xml = null,
-                                    XmlExceptionMessage = null,
+                                    ParseExceptionMessage = null,
                                     SchemaValidationMessage = "Schema Validation Error: " + schemaError,
                                 };
                                 runReplacementInfo.Add(rri);
@@ -435,7 +425,7 @@ namespace OpenDocx
                             RunReplacementInfo rri2 = new RunReplacementInfo()
                             {
                                 Xml = xml,
-                                XmlExceptionMessage = null,
+                                ParseExceptionMessage = null,
                                 SchemaValidationMessage = null,
                             };
                             runReplacementInfo.Add(rri2);
@@ -448,8 +438,8 @@ namespace OpenDocx
                             var runToReplace = newPara.Descendants(W.r).FirstOrDefault(rn => rn.Value == thisGuid && rn.Parent.Name != PA.Content);
                             if (runToReplace == null)
                                 throw new OpenDocxException("Internal error");
-                            if (rri.XmlExceptionMessage != null)
-                                runToReplace.ReplaceWith(CreateRunErrorMessage(rri.XmlExceptionMessage, te));
+                            if (rri.ParseExceptionMessage != null)
+                                runToReplace.ReplaceWith(CreateRunErrorMessage(rri.ParseExceptionMessage, te));
                             else if (rri.SchemaValidationMessage != null)
                                 runToReplace.ReplaceWith(CreateRunErrorMessage(rri.SchemaValidationMessage, te));
                             else
@@ -466,21 +456,21 @@ namespace OpenDocx
 
                 return new XElement(element.Name,
                     element.Attributes(),
-                    element.Nodes().Select(n => TransformToMetadata(n, data, te)));
+                    element.Nodes().Select(n => TransformToMetadata(n, parser, te)));
             }
             return node;
         }
 
-        private static XElement TransformXmlTextToMetadata(TemplateError te, string xmlText)
+        private static XElement TransformContentToMetadata(TemplateError te, string xmlText, IMetadataParser parser)
         {
             XElement xml;
             try
             {
-                xml = XElement.Parse(xmlText);
+                xml = parser.TransformContentToMetadata(xmlText);
             }
-            catch (XmlException e)
+            catch (MetadataParseException e)
             {
-                return CreateParaErrorMessage("XmlException: " + e.Message, te);
+                return CreateParaErrorMessage("ParseException: " + e.Message, te);
             }
             string schemaError = ValidatePerSchema(xml);
             if (schemaError != null)
@@ -491,7 +481,7 @@ namespace OpenDocx
         private class RunReplacementInfo
         {
             public XElement Xml;
-            public string XmlExceptionMessage;
+            public string ParseExceptionMessage;
             public string SchemaValidationMessage;
         }
 
@@ -630,7 +620,7 @@ namespace OpenDocx
             public bool HasError = false;
         }
 
-        static object ContentReplacementTransform(XNode node, XElement data, TemplateError templateError)
+        static object ContentReplacementTransform(XNode node, IDataContext data, TemplateError templateError)
         {
             XElement element = node as XElement;
             if (element != null)
@@ -647,11 +637,11 @@ namespace OpenDocx
                     string newValue;
                     try
                     {
-                        newValue = EvaluateXPathToString(data, xPath, optional);
+                        newValue = data.EvaluateMetadataToString(xPath, optional);
                     }
-                    catch (XPathException e)
+                    catch (EvaluationException e)
                     {
-                        return CreateContextErrorMessage(element, "XPathException: " + e.Message, templateError);
+                        return CreateContextErrorMessage(element, "EvaluationException: " + e.Message, templateError);
                     }
 
                     if (para != null)
@@ -686,27 +676,14 @@ namespace OpenDocx
                     var optionalString = (string)element.Attribute(PA.Optional);
                     bool optional = (optionalString != null && optionalString.ToLower() == "true");
 
-                    IEnumerable<XElement> repeatingData;
+                    IEnumerable<IDataContext> repeatingData;
                     try
                     {
-                        repeatingData = data.XPathSelectElements(selector);
+                        repeatingData = data.EvaluateList(selector, optional);
                     }
-                    catch (XPathException e)
+                    catch (EvaluationException e)
                     {
-                        return CreateContextErrorMessage(element, "XPathException: " + e.Message, templateError);
-                    }
-                    if (!repeatingData.Any())
-                    {
-                        if (optional)
-                        {
-                            return null;
-                            //XElement para = element.Descendants(W.p).FirstOrDefault();
-                            //if (para != null)
-                            //    return new XElement(W.p, new XElement(W.r));
-                            //else
-                            //    return new XElement(W.r);
-                        }
-                        return CreateContextErrorMessage(element, "Repeat: Select returned no data", templateError);
+                        return CreateContextErrorMessage(element, "EvaluationException: " + e.Message, templateError);
                     }
                     var newContent = repeatingData.Select(d =>
                         {
@@ -721,14 +698,14 @@ namespace OpenDocx
                 }
                 if (element.Name == PA.Table)
                 {
-                    IEnumerable<XElement> tableData;
+                    IEnumerable<IDataContext> tableData;
                     try
                     {
-                        tableData = data.XPathSelectElements((string)element.Attribute(PA.Select));
+                        tableData = data.EvaluateList((string)element.Attribute(PA.Select));
                     }
-                    catch (XPathException e)
+                    catch (EvaluationException e)
                     {
-                        return CreateContextErrorMessage(element, "XPathException: " + e.Message, templateError);
+                        return CreateContextErrorMessage(element, "EvaluationException: " + e.Message, templateError);
                     }
                     if (tableData.Count() == 0)
                         return CreateContextErrorMessage(element, "Table Select returned no data", templateError);
@@ -760,9 +737,9 @@ namespace OpenDocx
                                         string newValue = null;
                                         try
                                         {
-                                            newValue = EvaluateXPathToString(d, xPath, false);
+                                            newValue = d.EvaluateContentToString(xPath, false);
                                         }
-                                        catch (XPathException e)
+                                        catch (EvalutationException e)
                                         {
                                             XElement errorCell = new XElement(W.tc,
                                                 tc.Elements().Where(z => z.Name != W.p),
@@ -800,9 +777,9 @@ namespace OpenDocx
                    
                     try
                     {
-                        testValue = EvaluateXPathToString(data, xPath, false);
+                        testValue = data.EvaluateContentToString(xPath, false);
                     }
-	                catch (XPathException e)
+	                catch (EvaluationException e)
                     {
                         return CreateContextErrorMessage(element, e.Message, templateError);
                     }
@@ -855,43 +832,5 @@ namespace OpenDocx
             return errorPara;
         }
 
-        private static string EvaluateXPathToString(XElement element, string xPath, bool optional )
-        {
-            object xPathSelectResult;
-            try
-            {
-                //support some cells in the table may not have an xpath expression.
-                if (String.IsNullOrWhiteSpace(xPath)) return String.Empty;
-                
-                xPathSelectResult = element.XPathEvaluate(xPath);
-            }
-            catch (XPathException e)
-            {
-                throw new XPathException("XPathException: " + e.Message, e);
-            }
-
-            if ((xPathSelectResult is IEnumerable) && !(xPathSelectResult is string))
-            {
-                var selectedData = ((IEnumerable) xPathSelectResult).Cast<XObject>();
-                if (!selectedData.Any())
-                {
-                    if (optional) return string.Empty;
-                    throw new XPathException(string.Format("XPath expression ({0}) returned no results", xPath));
-                }
-                if (selectedData.Count() > 1)
-                {
-                    throw new XPathException(string.Format("XPath expression ({0}) returned more than one node", xPath));
-                }
-
-                XObject selectedDatum = selectedData.First(); 
-                
-                if (selectedDatum is XElement) return ((XElement) selectedDatum).Value;
-
-                if (selectedDatum is XAttribute) return ((XAttribute) selectedDatum).Value;
-            }
-
-            return xPathSelectResult.ToString();
-
-        }
     }
 }
