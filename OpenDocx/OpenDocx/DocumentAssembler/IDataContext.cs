@@ -9,7 +9,7 @@ namespace OpenDocx
     public interface IDataContext : IMetadataParser
     {
         string EvaluateText(string selector, bool optional);
-        IDataContext[] EvaluateList(string selector, bool optional);
+        IDataContext[] EvaluateList(string selector);
     }
 
     public class EvaluationException : Exception

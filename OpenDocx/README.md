@@ -1,8 +1,25 @@
-﻿[![Build status](https://ci.appveyor.com/api/projects/status/au9umdxcu7pnnacm?svg=true)](https://ci.appveyor.com/project/openxmlsdk/open-xml-powertools)
+﻿No NuGet.org feed at this time.
 
-NuGet Feed for CI build: https://ci.appveyor.com/nuget/open-xml-powertools
+OpenDocx
+========
+This project is a fork of the Open XML PowerTools, and as such it is also based on,
+and extends the functionality of, Microsoft's [Open XML SDK](https://github.com/OfficeDev/Open-XML-SDK).
 
-No NuGet.org feed at this time. We are working on it.
+This fork was renamed (and moved into a different namespace) because it diverges from
+the Open XML Power Tools in several key ways. It...
+- is primarily focused on enhanced assembly of DOCX files (PPTX and XLSX functionality is not an immediate priority)
+- primarily targets execution on .NET Core for cross-platform compatibility
+- enables alternative template syntaxes besides XPath (by abstracting the parsing of content controls)
+- enables alternative data sources besides XML (by abstracting data retrieval)
+- enables *asynchronous* document assembly and data retrieval
+- subdivides assembly into a multi-stage process for added flexibility and optimization _(in progress)_
+- adds support for additional template features (kinds of metadata) _(in progress)_
+- is generally structured to be embedded as a component in a larger, heterogeneous system
+
+Despite these significant changes (and others underway), the project has been structured to
+retain compatibility with the Open XML Power Tools -- all unit tests still pass. My aim is for
+that to continue to be true insofar as it's practical, and I plan to periodically synchronize
+this fork against the upstream repo.
 
 Open-XML-PowerTools
 ===================
@@ -27,6 +44,7 @@ It supports scenarios such as:
 
 Copyright (c) Microsoft Corporation 2012-2017
 Portions Copyright (c) Eric White 2016-2017
+Portions Copyright (c) Lowell Stewart 2018-2019
 Licensed under the Microsoft Public License.
 See License.txt in the project root for license information.
 

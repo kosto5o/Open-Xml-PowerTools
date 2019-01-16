@@ -89,7 +89,7 @@ namespace OpenDocx
             _element = data;
         }
 
-        public IDataContext[] EvaluateList(string selector, bool optional)
+        public IDataContext[] EvaluateList(string selector)
         {
             IEnumerable<XElement> repeatingData;
             try
@@ -99,19 +99,6 @@ namespace OpenDocx
             catch (XPathException e)
             {
                 throw new EvaluationException("XPathException: " + e.Message);
-            }
-            if (!repeatingData.Any())
-            {
-                if (optional)
-                {
-                    return null;
-                    //XElement para = element.Descendants(W.p).FirstOrDefault();
-                    //if (para != null)
-                    //    return new XElement(W.p, new XElement(W.r));
-                    //else
-                    //    return new XElement(W.r);
-                }
-                throw new EvaluationException("Repeat: Select returned no data");
             }
             var newContent = repeatingData.Select(d =>
                 {

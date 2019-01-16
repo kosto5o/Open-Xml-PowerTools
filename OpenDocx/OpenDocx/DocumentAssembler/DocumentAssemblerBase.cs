@@ -676,14 +676,27 @@ namespace OpenDocx
                     var optionalString = (string)element.Attribute(PA.Optional);
                     bool optional = (optionalString != null && optionalString.ToLower() == "true");
 
-                    IEnumerable<IDataContext> repeatingData;
+                    IDataContext[] repeatingData;
                     try
                     {
-                        repeatingData = data.EvaluateList(selector, optional);
+                        repeatingData = data.EvaluateList(selector);
                     }
                     catch (EvaluationException e)
                     {
                         return CreateContextErrorMessage(element, "EvaluationException: " + e.Message, templateError);
+                    }
+                    if (!repeatingData.Any())
+                    {
+                        if (optional)
+                        {
+                            return null;
+                            //XElement para = element.Descendants(W.p).FirstOrDefault();
+                            //if (para != null)
+                            //    return new XElement(W.p, new XElement(W.r));
+                            //else
+                            //    return new XElement(W.r);
+                        }
+                        return CreateContextErrorMessage(element, "Repeat: Select returned no data", templateError);
                     }
                     var newContent = repeatingData.Select(d =>
                         {
@@ -701,7 +714,7 @@ namespace OpenDocx
                     IEnumerable<IDataContext> tableData;
                     try
                     {
-                        tableData = data.EvaluateList((string)element.Attribute(PA.Select), false);
+                        tableData = data.EvaluateList((string)element.Attribute(PA.Select));
                     }
                     catch (EvaluationException e)
                     {
