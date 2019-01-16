@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace OpenDocx
 {
-    interface IDataContext : IMetadataParser
+    public interface IDataContext : IMetadataParser
     {
         string EvaluateText(string selector, bool optional);
         IDataContext[] EvaluateList(string selector, bool optional);

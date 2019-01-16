@@ -65,7 +65,7 @@ namespace OpenDocx
         public string EmbedOpen => "<#";
         public string EmbedClose => "#>";
 
-        private static XElement TransformContentToMetadata(string xmlText)
+        public XElement TransformContentToMetadata(string xmlText)
         {
             XElement xml;
             try
@@ -94,7 +94,7 @@ namespace OpenDocx
             IEnumerable<XElement> repeatingData;
             try
             {
-                repeatingData = data.XPathSelectElements(selector);
+                repeatingData = _element.XPathSelectElements(selector);
             }
             catch (XPathException e)
             {
@@ -121,7 +121,7 @@ namespace OpenDocx
             return newContent;
         }
 
-        public string EvaluateMetadataToString(string xPath, bool optional )
+        public string EvaluateText(string xPath, bool optional )
         {
             object xPathSelectResult;
             try

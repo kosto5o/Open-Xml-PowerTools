@@ -3,7 +3,7 @@ using System.Xml.Linq;
 
 namespace OpenDocx
 {
-    interface IMetadataParser
+    public interface IMetadataParser
     {
         string DelimiterOpen { get; }
         string DelimiterClose { get; }

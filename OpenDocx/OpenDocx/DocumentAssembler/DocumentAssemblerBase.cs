@@ -75,7 +75,7 @@ namespace OpenDocx
 
         private static XElement PrepareTemplatePart(IMetadataParser data, TemplateError te, XElement xDocRoot)
         {
-            xDocRoot = RemoveGoBackBookmarks(xDoc.Root);
+            xDocRoot = RemoveGoBackBookmarks(xDocRoot);
 
             // content controls in cells can surround the W.tc element, so transform so that such content controls are within the cell content
             xDocRoot = (XElement)NormalizeContentControlsInCells(xDocRoot);
@@ -637,7 +637,7 @@ namespace OpenDocx
                     string newValue;
                     try
                     {
-                        newValue = data.EvaluateMetadataToString(xPath, optional);
+                        newValue = data.EvaluateText(xPath, optional);
                     }
                     catch (EvaluationException e)
                     {
@@ -701,7 +701,7 @@ namespace OpenDocx
                     IEnumerable<IDataContext> tableData;
                     try
                     {
-                        tableData = data.EvaluateList((string)element.Attribute(PA.Select));
+                        tableData = data.EvaluateList((string)element.Attribute(PA.Select), false);
                     }
                     catch (EvaluationException e)
                     {
@@ -737,9 +737,9 @@ namespace OpenDocx
                                         string newValue = null;
                                         try
                                         {
-                                            newValue = d.EvaluateContentToString(xPath, false);
+                                            newValue = d.EvaluateText(xPath, false);
                                         }
-                                        catch (EvalutationException e)
+                                        catch (EvaluationException e)
                                         {
                                             XElement errorCell = new XElement(W.tc,
                                                 tc.Elements().Where(z => z.Name != W.p),
@@ -777,7 +777,7 @@ namespace OpenDocx
                    
                     try
                     {
-                        testValue = data.EvaluateContentToString(xPath, false);
+                        testValue = data.EvaluateText(xPath, false);
                     }
 	                catch (EvaluationException e)
                     {
