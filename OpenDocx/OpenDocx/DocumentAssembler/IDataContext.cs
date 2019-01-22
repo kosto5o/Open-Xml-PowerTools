@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace OpenDocx
@@ -11,6 +8,13 @@ namespace OpenDocx
         string EvaluateText(string selector, bool optional);
         IDataContext[] EvaluateList(string selector);
         void Release();
+    }
+
+    public interface IAsyncDataContext : IMetadataParser
+    {
+        Task<string> EvaluateTextAsync(string selector, bool optional);
+        Task<IAsyncDataContext[]> EvaluateListAsync(string selector);
+        Task ReleaseAsync();
     }
 
     public class EvaluationException : Exception

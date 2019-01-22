@@ -24,6 +24,7 @@ using System.Text.RegularExpressions;
 using System.Xml;
 using System.Xml.Linq;
 using System.Xml.Schema;
+using System.Threading.Tasks;
 using DocumentFormat.OpenXml.Packaging;
 
 namespace OpenDocx
@@ -45,6 +46,26 @@ namespace OpenDocx
             {
                 ProcessTemplatePart(data, te, part, preprocessed);
             }
+            return te.HasError;
+        }
+
+        public static async Task<bool> AssembleDocumentAsync(WordprocessingDocument wordDoc, IAsyncDataContext data, bool preprocessed = false)
+        {
+            // I introduced pre-processing of templates to facilitate asynchronous assembly
+            // doing as little as possible, so it's recommended to pre-process templates when
+            // using this method. However it's still optional.
+
+            if (!preprocessed)
+            {
+                if (RevisionAccepter.HasTrackedRevisions(wordDoc))
+                    throw new OpenDocxException("Invalid DocumentAssembler template - contains tracked revisions");
+
+                SimplifyTemplateMarkup(wordDoc);
+            }
+
+            var te = new TemplateError();
+            var partTasks = wordDoc.ContentParts().Select(part => ProcessTemplatePartAsync(data, te, part, preprocessed));
+            await Task.WhenAll(partTasks);
             return te.HasError;
         }
 
@@ -121,7 +142,28 @@ namespace OpenDocx
 
             xDoc.Elements().First().ReplaceWith(xDocRoot);
             part.PutXDocument();
-            return;
+        }
+
+        private static readonly object s_partLock = new object();
+
+        private static async Task ProcessTemplatePartAsync(IAsyncDataContext data, TemplateError te, OpenXmlPart part, bool preprocessed)
+        {
+            XDocument xDoc = part.GetXDocument();
+            var xDocRoot = preprocessed ? xDoc.Root : PrepareTemplatePart(data, te, xDoc.Root);
+            //bool special = (xDocRoot.Name.LocalName == "ftr" && part.Uri.ToString().Contains("footer2"));
+            System.Diagnostics.Debug.WriteLine(">" + part.Uri);
+
+            // do the actual content replacement
+            xDocRoot = (XElement)await ContentReplacementTransformAsync(xDocRoot, data, te);
+
+            System.Diagnostics.Debug.WriteLine("<" + part.Uri);
+
+            xDoc.Elements().First().ReplaceWith(xDocRoot);
+            // work around apparent issues with thread safety when replacing the content of a part within a package
+            lock (s_partLock)
+            {
+                part.PutXDocument();
+            }
         }
 
         private static XName[] s_MetaToForceToBlock = new XName[] {
@@ -635,6 +677,34 @@ namespace OpenDocx
             public bool HasError = false;
         }
 
+        static object ReplaceValue(XElement para, XElement run, string newValue)
+        {
+            if (para != null)
+            {
+                XElement p = new XElement(W.p, para.Elements(W.pPr));
+                foreach (string line in newValue.Split('\n'))
+                {
+                    p.Add(new XElement(W.r,
+                            para.Elements(W.r).Elements(W.rPr).FirstOrDefault(),
+                        (p.Elements().Count() > 1) ? new XElement(W.br) : null,
+                        new XElement(W.t, line)));
+                }
+                return p;
+            }
+            else
+            {
+                List<XElement> list = new List<XElement>();
+                foreach (string line in newValue.Split('\n'))
+                {
+                    list.Add(new XElement(W.r,
+                        run.Elements().Where(e => e.Name != W.t),
+                        (list.Count > 0) ? new XElement(W.br) : null,
+                        new XElement(W.t, line)));
+                }
+                return list;
+            }
+        }
+
         static object ContentReplacementTransform(XNode node, IDataContext data, TemplateError templateError)
         {
             XElement element = node as XElement;
@@ -659,31 +729,7 @@ namespace OpenDocx
                         return CreateContextErrorMessage(element, "EvaluationException: " + e.Message, templateError);
                     }
 
-                    if (para != null)
-                    {
-
-                        XElement p = new XElement(W.p, para.Elements(W.pPr));
-                        foreach(string line in newValue.Split('\n'))
-                        {
-                            p.Add(new XElement(W.r,
-                                    para.Elements(W.r).Elements(W.rPr).FirstOrDefault(),
-                                (p.Elements().Count() > 1) ? new XElement(W.br) : null,
-                                new XElement(W.t, line)));
-                        }
-                        return p;
-                    }
-                    else
-                    {
-                        List<XElement> list = new List<XElement>();
-                        foreach(string line in newValue.Split('\n'))
-                        {
-                            list.Add(new XElement(W.r,
-                                run.Elements().Where(e => e.Name != W.t),
-                                (list.Count > 0) ? new XElement(W.br) : null,
-                                new XElement(W.t, line)));
-                        }
-                        return list;
-                    }
+                    return ReplaceValue(para, run, newValue);
                 }
                 if (element.Name == PA.Repeat)
                 {
@@ -727,7 +773,7 @@ namespace OpenDocx
                 }
                 if (element.Name == PA.Table)
                 {
-                    IEnumerable<IDataContext> tableData;
+                    IDataContext[] tableData;
                     try
                     {
                         tableData = data.EvaluateList((string)element.Attribute(PA.Select));
@@ -751,46 +797,48 @@ namespace OpenDocx
                         return CreateContextErrorMessage(element, string.Format("Table does not contain a prototype row"), templateError);
                     protoRow.Descendants(W.bookmarkStart).Remove();
                     protoRow.Descendants(W.bookmarkEnd).Remove();
-                    XElement newTable = new XElement(W.tbl,
-                        table.Elements().Where(e => e.Name != W.tr),
-                        table.Elements(W.tr).FirstOrDefault(),
-                        tableData.Select(d =>
+                    var dataRows = tableData.Select(d =>
                         {
-                            var content = new XElement(W.tr,
-                                protoRow.Elements().Where(r => r.Name != W.tc),
-                                protoRow.Elements(W.tc)
-                                    .Select(tc =>
+                            var cells = protoRow.Elements(W.tc)
+                                .Select(tc =>
+                                {
+                                    XElement paragraph = tc.Elements(W.p).FirstOrDefault();
+                                    XElement cellRun = paragraph.Elements(W.r).FirstOrDefault();
+                                    string xPath = paragraph.Value;
+                                    string newValue = null;
+                                    try
                                     {
-                                        XElement paragraph = tc.Elements(W.p).FirstOrDefault();
-                                        XElement cellRun = paragraph.Elements(W.r).FirstOrDefault();
-                                        string xPath = paragraph.Value;
-                                        string newValue = null;
-                                        try
-                                        {
-                                            newValue = d.EvaluateText(xPath, false);
-                                        }
-                                        catch (EvaluationException e)
-                                        {
-                                            XElement errorCell = new XElement(W.tc,
+                                        newValue = d.EvaluateText(xPath, false);
+                                    }
+                                    catch (EvaluationException e)
+                                    {
+                                        XElement errorCell = new XElement(W.tc,
+                                            tc.Elements().Where(z => z.Name != W.p),
+                                            new XElement(W.p,
+                                                paragraph.Element(W.pPr),
+                                                CreateRunErrorMessage(e.Message, templateError)));
+                                        return errorCell;
+                                    }
+
+                                    XElement newCell = new XElement(W.tc,
                                                 tc.Elements().Where(z => z.Name != W.p),
                                                 new XElement(W.p,
                                                     paragraph.Element(W.pPr),
-                                                    CreateRunErrorMessage(e.Message, templateError)));
-                                            return errorCell;
-                                        }
-
-                                        XElement newCell = new XElement(W.tc,
-                                                   tc.Elements().Where(z => z.Name != W.p),
-                                                   new XElement(W.p,
-                                                       paragraph.Element(W.pPr),
-                                                       new XElement(W.r,
-                                                           cellRun != null ? cellRun.Element(W.rPr) : new XElement(W.rPr),  //if the cell was empty there is no cellrun
-                                                           new XElement(W.t, newValue))));
-                                        return newCell;
-                                    }));
+                                                    new XElement(W.r,
+                                                        cellRun != null ? cellRun.Element(W.rPr) : new XElement(W.rPr),  //if the cell was empty there is no cellrun
+                                                        new XElement(W.t, newValue))));
+                                    return newCell;
+                                });
+                            var rowContent = new XElement(W.tr,
+                                protoRow.Elements().Where(r => r.Name != W.tc),
+                                cells);
                             d.Release();
-                            return content;
-                        }),
+                            return rowContent;
+                        });
+                    XElement newTable = new XElement(W.tbl,
+                        table.Elements().Where(e => e.Name != W.tr),
+                        table.Elements(W.tr).FirstOrDefault(),
+                        dataRows,
                         footerRows
                         );
                     return newTable;
@@ -827,6 +875,182 @@ namespace OpenDocx
                 return new XElement(element.Name,
                     element.Attributes(),
                     element.Nodes().Select(n => ContentReplacementTransform(n, data, templateError)));
+            }
+            return node;
+        }
+
+        static async Task<object> ContentReplacementTransformAsync(XNode node, IAsyncDataContext data, TemplateError templateError)
+        {
+            XElement element = node as XElement;
+            if (element != null)
+            {
+                if (element.Name == PA.Content)
+                {
+                    XElement para = element.Descendants(W.p).FirstOrDefault();
+                    XElement run = element.Descendants(W.r).FirstOrDefault();
+
+                    var xPath = (string)element.Attribute(PA.Select);
+                    var optionalString = (string)element.Attribute(PA.Optional);
+                    bool optional = (optionalString != null && optionalString.ToLower() == "true");
+
+                    string newValue;
+                    try
+                    {
+                        newValue = await data.EvaluateTextAsync(xPath, optional);
+                    }
+                    catch (EvaluationException e)
+                    {
+                        return CreateContextErrorMessage(element, "EvaluationException: " + e.Message, templateError);
+                    }
+
+                    return ReplaceValue(para, run, newValue);
+                }
+                if (element.Name == PA.Repeat)
+                {
+                    string selector = (string)element.Attribute(PA.Select);
+                    var optionalString = (string)element.Attribute(PA.Optional);
+                    bool optional = (optionalString != null && optionalString.ToLower() == "true");
+
+                    IAsyncDataContext[] repeatingData;
+                    try
+                    {
+                        repeatingData = await data.EvaluateListAsync(selector);
+                    }
+                    catch (EvaluationException e)
+                    {
+                        return CreateContextErrorMessage(element, "EvaluationException: " + e.Message, templateError);
+                    }
+                    if (!repeatingData.Any())
+                    {
+                        if (optional)
+                        {
+                            return null;
+                            //XElement para = element.Descendants(W.p).FirstOrDefault();
+                            //if (para != null)
+                            //    return new XElement(W.p, new XElement(W.r));
+                            //else
+                            //    return new XElement(W.r);
+                        }
+                        return CreateContextErrorMessage(element, "Repeat: Select returned no data", templateError);
+                    }
+                    var newContentTasks = repeatingData.Select(async d =>
+                        {
+                            var contentTasks = element
+                                .Elements()
+                                .Select(e => ContentReplacementTransformAsync(e, d, templateError));
+                            var content = await Task.WhenAll(contentTasks);
+                            await d.ReleaseAsync();
+                            return content;
+                        });
+                    var newContent = await Task.WhenAll(newContentTasks);
+                    return newContent;
+                }
+                if (element.Name == PA.Table)
+                {
+                    IAsyncDataContext[] tableData;
+                    try
+                    {
+                        tableData = await data.EvaluateListAsync((string)element.Attribute(PA.Select));
+                    }
+                    catch (EvaluationException e)
+                    {
+                        return CreateContextErrorMessage(element, "EvaluationException: " + e.Message, templateError);
+                    }
+                    if (tableData.Count() == 0)
+                        return CreateContextErrorMessage(element, "Table Select returned no data", templateError);
+                    XElement table = element.Element(W.tbl);
+                    XElement protoRow = table.Elements(W.tr).Skip(1).FirstOrDefault();
+                    var footerRowsBeforeTransform = table
+                        .Elements(W.tr)
+                        .Skip(2)
+                        .ToList();
+                    var footerRowTasks = footerRowsBeforeTransform
+                        .Select(x => ContentReplacementTransformAsync(x, data, templateError));
+                    var footerRows = await Task.WhenAll(footerRowTasks);
+                    if (protoRow == null)
+                        return CreateContextErrorMessage(element, string.Format("Table does not contain a prototype row"), templateError);
+                    protoRow.Descendants(W.bookmarkStart).Remove();
+                    protoRow.Descendants(W.bookmarkEnd).Remove();
+                    var dataRowTasks = tableData.Select(async d =>
+                        {
+                            var cellTasks = protoRow.Elements(W.tc)
+                                .Select(async tc =>
+                                {
+                                    XElement paragraph = tc.Elements(W.p).FirstOrDefault();
+                                    XElement cellRun = paragraph.Elements(W.r).FirstOrDefault();
+                                    string xPath = paragraph.Value;
+                                    string newValue = null;
+                                    try
+                                    {
+                                        newValue = await d.EvaluateTextAsync(xPath, false);
+                                    }
+                                    catch (EvaluationException e)
+                                    {
+                                        XElement errorCell = new XElement(W.tc,
+                                            tc.Elements().Where(z => z.Name != W.p),
+                                            new XElement(W.p,
+                                                paragraph.Element(W.pPr),
+                                                CreateRunErrorMessage(e.Message, templateError)));
+                                        return errorCell;
+                                    }
+
+                                    XElement newCell = new XElement(W.tc,
+                                        tc.Elements().Where(z => z.Name != W.p),
+                                        new XElement(W.p,
+                                            paragraph.Element(W.pPr),
+                                            new XElement(W.r,
+                                                cellRun != null ? cellRun.Element(W.rPr) : new XElement(W.rPr),  //if the cell was empty there is no cellrun
+                                                new XElement(W.t, newValue))));
+                                    return newCell;
+                                });
+                            var rowContent = new XElement(W.tr,
+                                protoRow.Elements().Where(r => r.Name != W.tc),
+                                await Task.WhenAll(cellTasks));
+                            await d.ReleaseAsync();
+                            return rowContent;
+                        });
+                    XElement newTable = new XElement(W.tbl,
+                        table.Elements().Where(e => e.Name != W.tr),
+                        table.Elements(W.tr).FirstOrDefault(),
+                        await Task.WhenAll(dataRowTasks),
+                        footerRows
+                        );
+                    return newTable;
+                }
+                if (element.Name == PA.Conditional)
+                {
+                    string xPath = (string)element.Attribute(PA.Select);
+                    var match = (string)element.Attribute(PA.Match);
+                    var notMatch = (string)element.Attribute(PA.NotMatch);
+
+                    if (match == null && notMatch == null)
+                        return CreateContextErrorMessage(element, "Conditional: Must specify either Match or NotMatch", templateError);
+                    if (match != null && notMatch != null)
+                        return CreateContextErrorMessage(element, "Conditional: Cannot specify both Match and NotMatch", templateError);
+
+                    string testValue = null;
+
+                    try
+                    {
+                        testValue = await data.EvaluateTextAsync(xPath, false);
+                    }
+                    catch (EvaluationException e)
+                    {
+                        return CreateContextErrorMessage(element, e.Message, templateError);
+                    }
+
+                    if ((match != null && testValue == match) || (notMatch != null && testValue != notMatch))
+                    {
+                        var contentTasks = element.Elements().Select(e => ContentReplacementTransformAsync(e, data, templateError));
+                        var content = await Task.WhenAll(contentTasks);
+                        return content;
+                    }
+                    return null;
+                }
+                var childNodeTasks = element.Nodes().Select(n => ContentReplacementTransformAsync(n, data, templateError));
+                return new XElement(element.Name,
+                    element.Attributes(),
+                    await Task.WhenAll(childNodeTasks));
             }
             return node;
         }

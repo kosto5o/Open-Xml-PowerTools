@@ -22,9 +22,8 @@ using System.IO;
 using System.Linq;
 using System.Xml;
 using System.Xml.Linq;
-using System.Xml.XPath;
+using System.Threading.Tasks;
 using DocumentFormat.OpenXml.Packaging;
-using System.Collections;
 
 namespace OpenDocx
 {
@@ -51,6 +50,37 @@ namespace OpenDocx
                 return assembledDocument;
             }
         }
+
+        public class AsyncAssembleResult
+        {
+            public WmlDocument assembledDocument;
+            public bool templateError;
+        }
+
+        public static Task<AsyncAssembleResult> AssembleDocumentAsync(WmlDocument templateDoc, XmlDocument data)
+        {
+            XDocument xDoc = data.GetXDocument();
+            return AssembleDocumentAsync(templateDoc, xDoc.Root);
+        }
+
+        public static async Task<AsyncAssembleResult> AssembleDocumentAsync(WmlDocument templateDoc, XElement data)
+        {
+            System.Diagnostics.Debug.WriteLine(templateDoc.FileName);
+            var dataSource = new AsyncXmlDataContext(data);
+            byte[] byteArray = templateDoc.DocumentByteArray;
+            var result = new AsyncAssembleResult();
+            using (MemoryStream mem = new MemoryStream())
+            {
+                mem.Write(byteArray, 0, (int)byteArray.Length);
+                using (WordprocessingDocument wordDoc = WordprocessingDocument.Open(mem, true))
+                {
+                    result.templateError = await DocumentAssemblerBase.AssembleDocumentAsync(wordDoc, dataSource);
+                }
+                result.assembledDocument = new WmlDocument("TempFileName.docx", mem.ToArray());
+                return result;
+            }
+        }
+
     }
 
     public class XmlMetadataParser : IMetadataParser
@@ -72,79 +102,6 @@ namespace OpenDocx
                 throw new MetadataParseException(e.Message, e.InnerException);
             }
             return xml;
-        }
-    }
-
-    public class XmlDataContext : XmlMetadataParser, IDataContext
-    {
-        private XElement _element;
-
-        public XmlDataContext(XElement data)
-        {
-            _element = data;
-        }
-
-        public IDataContext[] EvaluateList(string selector)
-        {
-            IEnumerable<XElement> repeatingData;
-            try
-            {
-                repeatingData = _element.XPathSelectElements(selector);
-            }
-            catch (XPathException e)
-            {
-                throw new EvaluationException("XPathException: " + e.Message);
-            }
-            var newContent = repeatingData.Select(d =>
-                {
-                    return new XmlDataContext(d);
-                })
-                .ToArray();
-            return newContent;
-        }
-
-        public string EvaluateText(string xPath, bool optional )
-        {
-            object xPathSelectResult;
-            try
-            {
-                //support some cells in the table may not have an xpath expression.
-                if (String.IsNullOrWhiteSpace(xPath)) return String.Empty;
-                
-                xPathSelectResult = _element.XPathEvaluate(xPath);
-            }
-            catch (XPathException e)
-            {
-                throw new EvaluationException("XPathException: " + e.Message, e);
-            }
-
-            if ((xPathSelectResult is IEnumerable) && !(xPathSelectResult is string))
-            {
-                var selectedData = ((IEnumerable) xPathSelectResult).Cast<XObject>();
-                if (!selectedData.Any())
-                {
-                    if (optional) return string.Empty;
-                    throw new EvaluationException(string.Format("XPath expression ({0}) returned no results", xPath));
-                }
-                if (selectedData.Count() > 1)
-                {
-                    throw new EvaluationException(string.Format("XPath expression ({0}) returned more than one node", xPath));
-                }
-
-                XObject selectedDatum = selectedData.First(); 
-                
-                if (selectedDatum is XElement) return ((XElement) selectedDatum).Value;
-
-                if (selectedDatum is XAttribute) return ((XAttribute) selectedDatum).Value;
-            }
-
-            return xPathSelectResult.ToString();
-
-        }
-
-        public void Release()
-        {
-            _element = null;
         }
     }
 }
