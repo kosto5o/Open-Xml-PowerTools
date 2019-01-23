@@ -131,7 +131,9 @@ namespace OxPt
         [InlineData("DA264-InvalidRunLevelRepeat.docx", "DA-Data.xml", true)]
         [InlineData("DA265-RunLevelRepeatWithWhiteSpaceBefore.docx", "DA-Data.xml", false)]
         [InlineData("DA266-RunLevelRepeat-NoData.docx", "DA-Data.xml", true)]
-        
+        [InlineData("DA267-RunLevelConditionalElse.docx", "DA-Data.xml", false)]
+        [InlineData("DA268-ConditionalElse.docx", "DA-DataSmallCustomer.xml", false)]
+
         public void DA101(string name, string data, bool err)
         {
             FileInfo templateDocx = new FileInfo(Path.Combine(TestUtil.SourceDir.FullName, name));
@@ -264,6 +266,8 @@ namespace OxPt
         [InlineData("DA264-InvalidRunLevelRepeat.docx", "DA-Data.xml", true)]
         [InlineData("DA265-RunLevelRepeatWithWhiteSpaceBefore.docx", "DA-Data.xml", false)]
         [InlineData("DA266-RunLevelRepeat-NoData.docx", "DA-Data.xml", true)]
+        [InlineData("DA267-RunLevelConditionalElse.docx", "DA-Data.xml", false)]
+        [InlineData("DA268-ConditionalElse.docx", "DA-DataSmallCustomer.xml", false)]
 
         public async Task DA101Async(string name, string data, bool err)
         {

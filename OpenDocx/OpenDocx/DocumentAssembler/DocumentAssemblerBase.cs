@@ -1,18 +1,24 @@
 ﻿/***************************************************************************
 
-Copyright (c) Microsoft Corporation 2012-2015.
+Original Copyright (c) Microsoft Corporation 2012-2015.
+Modifications Copyright (c) Lowell Stewart 2018-2019.
 
 This code is licensed using the Microsoft Public License (Ms-PL).  The text of the license can be found here:
 
 http://www.microsoft.com/resources/sharedsource/licensingbasics/publiclicense.mspx
 
-Published at http://OpenXmlDeveloper.org
+Forked from http://OpenXmlDeveloper.org
 Resource Center and Documentation: http://openxmldeveloper.org/wiki/w/wiki/powertools-for-open-xml.aspx
 
-Developer: Eric White
+Original developer: Eric White
 Blog: http://www.ericwhite.com
 Twitter: @EricWhiteDev
 Email: eric@ericwhite.com
+
+Enhancements by Lowell Stewart:
+ - abstracted the handling of fields/content controls so an implementation can still use
+   XPath and XML (all tests still pass) but other implementation can use other field formats
+   and data access methods.
 
 ***************************************************************************/
 
@@ -168,6 +174,8 @@ namespace OpenDocx
 
         private static XName[] s_MetaToForceToBlock = new XName[] {
             PA.Conditional,
+            PA.ElseConditional,
+            PA.Else,
             PA.EndConditional,
             PA.Repeat,
             PA.EndRepeat,
@@ -193,6 +201,7 @@ namespace OpenDocx
                             newMeta.ReplaceWith(CreateRunErrorMessage("Error: Unmatched metadata can't be in paragraph with other text", te));
                             return newPara;
                         }
+                        // force single metadata up to block level
                         var meta = new XElement(child.Name,
                             child.Attributes(),
                             new XElement(W.p,
@@ -201,21 +210,42 @@ namespace OpenDocx
                                 child.Elements()));
                         return meta;
                     }
-                    var count = childMeta.Count();
-                    if (count % 2 == 0)
+                    // check for proper nesting of run-level metadata
+                    var stack = new Stack<XName>();
+                    foreach (var c in childMeta)
                     {
-                        if (childMeta.Where(c => c.Name == PA.Repeat).Count() != childMeta.Where(c => c.Name == PA.EndRepeat).Count())
-                            return CreateContextErrorMessage(element, "Error: Mismatch Repeat / EndRepeat at run level", te);
-                        if (childMeta.Where(c => c.Name == PA.Conditional).Count() != childMeta.Where(c => c.Name == PA.EndConditional).Count())
-                            return CreateContextErrorMessage(element, "Error: Mismatch Conditional / EndConditional at run level", te);
-                        return new XElement(element.Name,
-                            element.Attributes(),
-                            element.Nodes().Select(n => ForceBlockLevelAsAppropriate(n, te)));
+                        if (c.Name == PA.Repeat)
+                        {
+                            stack.Push(c.Name);
+                        }
+                        else if (c.Name == PA.EndRepeat)
+                        {
+                            if (stack.Pop() != PA.Repeat)
+                                return CreateContextErrorMessage(element, "Error: Mismatch Repeat / EndRepeat at run level", te);
+                        }
+                        else if (c.Name == PA.Conditional)
+                        {
+                            stack.Push(c.Name);
+                        }
+                        else if (c.Name == PA.ElseConditional)
+                        {
+                            if (stack.Peek() != PA.Conditional)
+                                return CreateContextErrorMessage(element, "Error: ElseConditional outside of Conditional at run level", te);
+                        }
+                        else if (c.Name == PA.Else)
+                        {
+                            if (stack.Peek() != PA.Conditional)
+                                return CreateContextErrorMessage(element, "Error: Else outside of Conditional at run level", te);
+                        }
+                        else if (c.Name == PA.EndConditional)
+                        {
+                            if (stack.Pop() != PA.Conditional)
+                                return CreateContextErrorMessage(element, "Error: Mismatch Conditional / EndConditional at run level", te);
+                        }
                     }
-                    else
-                    {
-                        return CreateContextErrorMessage(element, "Error: Invalid metadata at run level", te);
-                    }
+                    return new XElement(element.Name,
+                        element.Attributes(),
+                        element.Nodes().Select(n => ForceBlockLevelAsAppropriate(n, te)));
                 }
                 return new XElement(element.Name,
                     element.Attributes(),
@@ -304,8 +334,10 @@ namespace OpenDocx
             int conditionalDepth = 0;
             foreach (var metadata in xDoc.Descendants().Where(d =>
                     d.Name == PA.Repeat ||
-                    d.Name == PA.Conditional ||
                     d.Name == PA.EndRepeat ||
+                    d.Name == PA.Conditional ||
+                    d.Name == PA.ElseConditional ||
+                    d.Name == PA.Else ||
                     d.Name == PA.EndConditional))
             {
                 if (metadata.Name == PA.Repeat)
@@ -323,6 +355,16 @@ namespace OpenDocx
                 if (metadata.Name == PA.Conditional)
                 {
                     ++conditionalDepth;
+                    metadata.Add(new XAttribute(PA.Depth, conditionalDepth));
+                    continue;
+                }
+                if (metadata.Name == PA.ElseConditional)
+                {
+                    metadata.Add(new XAttribute(PA.Depth, conditionalDepth));
+                    continue;
+                }
+                if (metadata.Name == PA.Else)
+                {
                     metadata.Add(new XAttribute(PA.Depth, conditionalDepth));
                     continue;
                 }
@@ -353,12 +395,23 @@ namespace OpenDocx
                         metadata.ReplaceWith(CreateParaErrorMessage(string.Format("{0} does not have matching {1}", metadata.Name.LocalName, matchingEndName.LocalName), te));
                         continue;
                     }
-                    metadata.RemoveNodes();
+                    metadata.RemoveNodes(); // LS: are there any?? why would there be?
                     var contentBetween = metadata.ElementsAfterSelf().TakeWhile(after => after != matchingEnd).ToList();
                     foreach (var item in contentBetween)
                         item.Remove();
-                    contentBetween = contentBetween.Where(n => n.Name != W.bookmarkStart && n.Name != W.bookmarkEnd).ToList();
-                    metadata.Add(contentBetween);
+                    contentBetween = contentBetween.Where(n => n.Name != W.bookmarkStart && n.Name != W.bookmarkEnd).ToList(); // ignore bookmarks
+                    //metadata.Add(contentBetween); // instead of adding all, add one-at-a-time, looking for "else ifs" and "elses", and making them nested parents of the appropriate content
+                    var metadataParent = metadata;
+                    foreach (var e in contentBetween)
+                    {
+                        metadataParent.Add(e);
+                        if (((e.Name == PA.ElseConditional) || (e.Name == PA.Else)) && ((int)e.Attribute(PA.Depth) == depth))
+                        {
+                            e.RemoveNodes(); // LS: are there any?? why would there be?
+                            metadataParent = e;
+                            e.Attributes(PA.Depth).Remove();
+                        }
+                    }
                     metadata.Attributes(PA.Depth).Remove();
                     matchingEnd.Remove();
                     didReplace = true;
@@ -376,6 +429,8 @@ namespace OpenDocx
             "Repeat",
             "EndRepeat",
             "Conditional",
+            "ElseConditional",
+            "Else",
             "EndConditional",
         };
 
@@ -435,8 +490,8 @@ namespace OpenDocx
                     int occurances = paraContents.Select((c, i) => paraContents.Substring(i)).Count(sub => sub.StartsWith(parser.EmbedOpen));
                     if (paraContents.StartsWith(parser.EmbedOpen) && paraContents.EndsWith(parser.EmbedClose) && occurances == 1)
                     {
-                        var xmlText = paraContents.Substring(parser.EmbedOpen.Length, paraContents.Length - parser.EmbedOpen.Length - parser.EmbedClose.Length).Trim();
-                        XElement xml = TransformContentToMetadata(te, xmlText, parser);
+                        var content = paraContents.Substring(parser.EmbedOpen.Length, paraContents.Length - parser.EmbedOpen.Length - parser.EmbedClose.Length).Trim();
+                        XElement xml = TransformContentToMetadata(te, content, parser);
                         if (xml.Name == W.p || xml.Name == W.r)
                             return xml;
                         xml.Add(element);
@@ -451,10 +506,13 @@ namespace OpenDocx
                         OpenXmlRegex.Replace(new[] { element }, r, thisGuid, (para, match) =>
                         {
                             var matchString = match.Value.Trim();
-                            var xmlText = matchString.Substring(2, matchString.Length - 4).Trim().Replace('“', '"').Replace('”', '"');
+                            var content = matchString.Substring(
+                                    parser.EmbedOpen.Length,
+                                    matchString.Length - parser.EmbedOpen.Length - parser.EmbedClose.Length
+                                ).Trim().Replace('“', '"').Replace('”', '"');
                             try
                             {
-                                xml = parser.TransformContentToMetadata(xmlText);
+                                xml = parser.TransformContentToMetadata(content);
                             }
                             catch (MetadataParseException e)
                             {
@@ -518,12 +576,12 @@ namespace OpenDocx
             return node;
         }
 
-        private static XElement TransformContentToMetadata(TemplateError te, string xmlText, IMetadataParser parser)
+        private static XElement TransformContentToMetadata(TemplateError te, string content, IMetadataParser parser)
         {
             XElement xml;
             try
             {
-                xml = parser.TransformContentToMetadata(xmlText);
+                xml = parser.TransformContentToMetadata(content);
             }
             catch (MetadataParseException e)
             {
@@ -614,6 +672,30 @@ namespace OpenDocx
                         }
                     },
                     {
+                        PA.ElseConditional,
+                        new PASchemaSet() {
+                            XsdMarkup =
+                              @"<xs:schema attributeFormDefault='unqualified' elementFormDefault='qualified' xmlns:xs='http://www.w3.org/2001/XMLSchema'>
+                                  <xs:element name='ElseConditional'>
+                                    <xs:complexType>
+                                      <xs:attribute name='Select' type='xs:string' use='required' />
+                                      <xs:attribute name='Match' type='xs:string' use='optional' />
+                                      <xs:attribute name='NotMatch' type='xs:string' use='optional' />
+                                    </xs:complexType>
+                                  </xs:element>
+                                </xs:schema>",
+                        }
+                    },
+                    {
+                        PA.Else,
+                        new PASchemaSet() {
+                            XsdMarkup =
+                              @"<xs:schema attributeFormDefault='unqualified' elementFormDefault='qualified' xmlns:xs='http://www.w3.org/2001/XMLSchema'>
+                                  <xs:element name='Else' />
+                                </xs:schema>",
+                        }
+                    },
+                    {
                         PA.EndConditional,
                         new PASchemaSet() {
                             XsdMarkup =
@@ -655,6 +737,8 @@ namespace OpenDocx
             public static XName Repeat = "Repeat";
             public static XName EndRepeat = "EndRepeat";
             public static XName Conditional = "Conditional";
+            public static XName ElseConditional = "ElseConditional";
+            public static XName Else = "Else";
             public static XName EndConditional = "EndConditional";
 
             public static XName Select = "Select";
@@ -715,14 +799,14 @@ namespace OpenDocx
                     XElement para = element.Descendants(W.p).FirstOrDefault();
                     XElement run = element.Descendants(W.r).FirstOrDefault();
 
-                    var xPath = (string) element.Attribute(PA.Select);
+                    var selector = (string) element.Attribute(PA.Select);
                     var optionalString = (string) element.Attribute(PA.Optional);
                     bool optional = (optionalString != null && optionalString.ToLower() == "true");
 
                     string newValue;
                     try
                     {
-                        newValue = data.EvaluateText(xPath, optional);
+                        newValue = data.EvaluateText(selector, optional);
                     }
                     catch (EvaluationException e)
                     {
@@ -804,11 +888,11 @@ namespace OpenDocx
                                 {
                                     XElement paragraph = tc.Elements(W.p).FirstOrDefault();
                                     XElement cellRun = paragraph.Elements(W.r).FirstOrDefault();
-                                    string xPath = paragraph.Value;
+                                    string selector = paragraph.Value;
                                     string newValue = null;
                                     try
                                     {
-                                        newValue = d.EvaluateText(xPath, false);
+                                        newValue = d.EvaluateText(selector, false);
                                     }
                                     catch (EvaluationException e)
                                     {
@@ -843,9 +927,9 @@ namespace OpenDocx
                         );
                     return newTable;
                 }
-                if (element.Name == PA.Conditional)
+                if (element.Name == PA.Conditional || element.Name == PA.ElseConditional)
                 {
-                    string xPath = (string)element.Attribute(PA.Select);
+                    string selector = (string)element.Attribute(PA.Select);
                     var match = (string)element.Attribute(PA.Match);
                     var notMatch = (string)element.Attribute(PA.NotMatch);
 
@@ -858,7 +942,7 @@ namespace OpenDocx
                    
                     try
                     {
-                        testValue = data.EvaluateText(xPath, false);
+                        testValue = data.EvaluateText(selector, false);
                     }
 	                catch (EvaluationException e)
                     {
@@ -867,9 +951,15 @@ namespace OpenDocx
                   
                     if ((match != null && testValue == match) || (notMatch != null && testValue != notMatch))
                     {
-                        var content = element.Elements().Select(e => ContentReplacementTransform(e, data, templateError));
+                        var content = element.Elements().Where(e => e.Name != PA.ElseConditional && e.Name != PA.Else).Select(e => ContentReplacementTransform(e, data, templateError));
                         return content;
                     }
+                    var elseCond = element.Elements(PA.ElseConditional).FirstOrDefault();
+                    if (elseCond != null)
+                        return ContentReplacementTransform(elseCond, data, templateError);
+                    elseCond = element.Elements(PA.Else).FirstOrDefault();
+                    if (elseCond != null)
+                        return elseCond.Elements().Select(e => ContentReplacementTransform(e, data, templateError));
                     return null;
                 }
                 return new XElement(element.Name,
@@ -889,14 +979,14 @@ namespace OpenDocx
                     XElement para = element.Descendants(W.p).FirstOrDefault();
                     XElement run = element.Descendants(W.r).FirstOrDefault();
 
-                    var xPath = (string)element.Attribute(PA.Select);
+                    var selector = (string)element.Attribute(PA.Select);
                     var optionalString = (string)element.Attribute(PA.Optional);
                     bool optional = (optionalString != null && optionalString.ToLower() == "true");
 
                     string newValue;
                     try
                     {
-                        newValue = await data.EvaluateTextAsync(xPath, optional);
+                        newValue = await data.EvaluateTextAsync(selector, optional);
                     }
                     catch (EvaluationException e)
                     {
@@ -978,11 +1068,11 @@ namespace OpenDocx
                                 {
                                     XElement paragraph = tc.Elements(W.p).FirstOrDefault();
                                     XElement cellRun = paragraph.Elements(W.r).FirstOrDefault();
-                                    string xPath = paragraph.Value;
+                                    string selector = paragraph.Value;
                                     string newValue = null;
                                     try
                                     {
-                                        newValue = await d.EvaluateTextAsync(xPath, false);
+                                        newValue = await d.EvaluateTextAsync(selector, false);
                                     }
                                     catch (EvaluationException e)
                                     {
@@ -1017,9 +1107,9 @@ namespace OpenDocx
                         );
                     return newTable;
                 }
-                if (element.Name == PA.Conditional)
+                if (element.Name == PA.Conditional || element.Name == PA.ElseConditional)
                 {
-                    string xPath = (string)element.Attribute(PA.Select);
+                    string selector = (string)element.Attribute(PA.Select);
                     var match = (string)element.Attribute(PA.Match);
                     var notMatch = (string)element.Attribute(PA.NotMatch);
 
@@ -1032,7 +1122,7 @@ namespace OpenDocx
 
                     try
                     {
-                        testValue = await data.EvaluateTextAsync(xPath, false);
+                        testValue = await data.EvaluateTextAsync(selector, false);
                     }
                     catch (EvaluationException e)
                     {
@@ -1041,7 +1131,17 @@ namespace OpenDocx
 
                     if ((match != null && testValue == match) || (notMatch != null && testValue != notMatch))
                     {
-                        var contentTasks = element.Elements().Select(e => ContentReplacementTransformAsync(e, data, templateError));
+                        var contentTasks = element.Elements().Where(e => e.Name != PA.ElseConditional && e.Name != PA.Else).Select(e => ContentReplacementTransformAsync(e, data, templateError));
+                        var content = await Task.WhenAll(contentTasks);
+                        return content;
+                    }
+                    var elseCond = element.Elements(PA.ElseConditional).FirstOrDefault();
+                    if (elseCond != null)
+                        return await ContentReplacementTransformAsync(elseCond, data, templateError);
+                    elseCond = element.Elements(PA.Else).FirstOrDefault();
+                    if (elseCond != null)
+                    {
+                        var contentTasks = elseCond.Elements().Select(e => ContentReplacementTransformAsync(e, data, templateError));
                         var content = await Task.WhenAll(contentTasks);
                         return content;
                     }
