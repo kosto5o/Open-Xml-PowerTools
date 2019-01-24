@@ -6,6 +6,7 @@ namespace OpenDocx
     public interface IDataContext : IMetadataParser
     {
         string EvaluateText(string selector, bool optional);
+        bool EvaluateBool(string selector, string match, string notMatch);
         IDataContext[] EvaluateList(string selector);
         void Release();
     }
@@ -13,6 +14,7 @@ namespace OpenDocx
     public interface IAsyncDataContext : IMetadataParser
     {
         Task<string> EvaluateTextAsync(string selector, bool optional);
+        Task<bool> EvaluateBoolAsync(string selector, string match, string notMatch);
         Task<IAsyncDataContext[]> EvaluateListAsync(string selector);
         Task ReleaseAsync();
     }

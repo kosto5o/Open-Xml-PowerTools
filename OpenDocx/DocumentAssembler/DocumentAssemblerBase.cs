@@ -1,4 +1,4 @@
-﻿/***************************************************************************
+/***************************************************************************
 
 Original Copyright (c) Microsoft Corporation 2012-2015.
 Modifications Copyright (c) Lowell Stewart 2018-2019.
@@ -55,7 +55,7 @@ namespace OpenDocx
             return te.HasError;
         }
 
-        public static async Task<bool> AssembleDocumentAsync(WordprocessingDocument wordDoc, IAsyncDataContext data, bool preprocessed = false)
+        protected static async Task<bool> AssembleDocumentAsync(WordprocessingDocument wordDoc, IAsyncDataContext data, bool preprocessed = false)
         {
             // I introduced pre-processing of templates to facilitate asynchronous assembly
             // doing as little as possible, so it's recommended to pre-process templates when
@@ -75,7 +75,50 @@ namespace OpenDocx
             return te.HasError;
         }
 
-        public static bool PrepareTemplate(WordprocessingDocument wordDoc, IMetadataParser fieldParser)
+        protected static async Task<AssembleResult> AssembleDocumentAsync(WmlDocument templateDoc, string outputFilename, IAsyncDataContext dataSource, bool preprocessed = false)
+        {
+            WmlDocument assembledDocument = null;
+            bool templateError = false;
+            byte[] byteArray = templateDoc.DocumentByteArray;
+            using (MemoryStream mem = new MemoryStream())
+            {
+                mem.Write(byteArray, 0, (int)byteArray.Length); // copy template file (binary) into memory -- I guess so the template/file handle isn't held/locked?
+                using (WordprocessingDocument wordDoc = WordprocessingDocument.Open(mem, true)) // read & parse that byte array into OXML document (also in memory)
+                {
+                    templateError = await AssembleDocumentAsync(wordDoc, dataSource, preprocessed);
+                }
+                assembledDocument = new WmlDocument(outputFilename, mem.ToArray());
+            }
+            return new AssembleResult(assembledDocument, templateError);
+        }
+
+        protected static async Task<CompileResult> CompileTemplateAsync(WmlDocument templateDoc, string outputFilename, IMetadataParser parser)
+        {
+            WmlDocument preprocessedTemplate = null;
+            bool templateError = false;
+            byte[] byteArray = templateDoc.DocumentByteArray;
+            using (MemoryStream mem = new MemoryStream())
+            {
+                mem.Write(byteArray, 0, (int)byteArray.Length); // copy template file (binary) into memory -- I guess so the template/file handle isn't held/locked?
+                using (WordprocessingDocument wordDoc = WordprocessingDocument.Open(mem, true)) // read & parse that byte array into OXML document (also in memory)
+                {
+                    templateError = await PrepareTemplateAsync(wordDoc, parser);
+
+                    // experimental: save a "normalized", plain text version of the template as Flat OPC, to see what it looks like at this point in processing
+                    string str = wordDoc.ToFlatOpcString();
+                    using (StreamWriter sw = File.CreateText(outputFilename + ".FlatOpc.xml"))
+                    {
+                        sw.Write(str);
+                        sw.Close();
+                    }
+                    // end experimental
+                }
+                preprocessedTemplate = new WmlDocument(outputFilename + ".preprocessed", mem.ToArray());
+            }
+            return new CompileResult(preprocessedTemplate, templateError);
+        }
+
+        protected static bool PrepareTemplate(WordprocessingDocument wordDoc, IMetadataParser fieldParser)
         {
             if (RevisionAccepter.HasTrackedRevisions(wordDoc))
                 throw new OpenDocxException("Invalid DocumentAssembler template - contains tracked revisions");
@@ -88,6 +131,24 @@ namespace OpenDocx
                 XDocument xDoc = part.GetXDocument();
                 xDoc.Elements().First().ReplaceWith(PrepareTemplatePart(fieldParser, te, xDoc.Root));
                 part.PutXDocument();
+            }
+            return te.HasError;
+        }
+
+        protected static async Task<bool> PrepareTemplateAsync(WordprocessingDocument wordDoc, IMetadataParser fieldParser)
+        {
+            if (RevisionAccepter.HasTrackedRevisions(wordDoc))
+                throw new OpenDocxException("Invalid DocumentAssembler template - contains tracked revisions");
+
+            await Task.Yield(); // force asynchrony (for testing, mostly)
+            SimplifyTemplateMarkup(wordDoc);
+
+            var te = new TemplateError();
+            foreach (var part in wordDoc.ContentParts())
+            {
+                XDocument xDoc = part.GetXDocument();
+                xDoc.Elements().First().ReplaceWith(PrepareTemplatePart(fieldParser, te, xDoc.Root));
+                part.PutXDocument(); // if we were processing template parts in parallel (as we do during assembly), this would need to be lock{}ed
             }
             return te.HasError;
         }
@@ -730,22 +791,22 @@ namespace OpenDocx
             return null;
         }
 
-        private class PA
+        public class PA
         {
-            public static XName Content = "Content";
-            public static XName Table = "Table";
-            public static XName Repeat = "Repeat";
-            public static XName EndRepeat = "EndRepeat";
-            public static XName Conditional = "Conditional";
-            public static XName ElseConditional = "ElseConditional";
-            public static XName Else = "Else";
-            public static XName EndConditional = "EndConditional";
+            public static readonly XName Content = "Content";
+            public static readonly XName Table = "Table";
+            public static readonly XName Repeat = "Repeat";
+            public static readonly XName EndRepeat = "EndRepeat";
+            public static readonly XName Conditional = "Conditional";
+            public static readonly XName ElseConditional = "ElseConditional";
+            public static readonly XName Else = "Else";
+            public static readonly XName EndConditional = "EndConditional";
 
-            public static XName Select = "Select";
-            public static XName Optional = "Optional";
-            public static XName Match = "Match";
-            public static XName NotMatch = "NotMatch";
-            public static XName Depth = "Depth";
+            public static readonly XName Select = "Select";
+            public static readonly XName Optional = "Optional";
+            public static readonly XName Match = "Match";
+            public static readonly XName NotMatch = "NotMatch";
+            public static readonly XName Depth = "Depth";
         }
 
         private class PASchemaSet
@@ -932,24 +993,18 @@ namespace OpenDocx
                     string selector = (string)element.Attribute(PA.Select);
                     var match = (string)element.Attribute(PA.Match);
                     var notMatch = (string)element.Attribute(PA.NotMatch);
-
-                    if (match == null && notMatch == null)
-                        return CreateContextErrorMessage(element, "Conditional: Must specify either Match or NotMatch", templateError);
-                    if (match != null && notMatch != null)
-                        return CreateContextErrorMessage(element, "Conditional: Cannot specify both Match and NotMatch", templateError);
-
-                    string testValue = null; 
+                    bool testValue; 
                    
                     try
                     {
-                        testValue = data.EvaluateText(selector, false);
+                        testValue = data.EvaluateBool(selector, match, notMatch);
                     }
 	                catch (EvaluationException e)
                     {
                         return CreateContextErrorMessage(element, e.Message, templateError);
                     }
                   
-                    if ((match != null && testValue == match) || (notMatch != null && testValue != notMatch))
+                    if (testValue)
                     {
                         var content = element.Elements().Where(e => e.Name != PA.ElseConditional && e.Name != PA.Else).Select(e => ContentReplacementTransform(e, data, templateError));
                         return content;

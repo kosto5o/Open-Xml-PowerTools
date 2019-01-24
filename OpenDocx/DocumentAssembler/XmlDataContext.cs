@@ -75,6 +75,18 @@ namespace OpenDocx
 
         }
 
+        public bool EvaluateBool(string xPath, string match, string notMatch)
+        {
+            if (match == null && notMatch == null)
+                throw new EvaluationException("Conditional: Must specify either Match or NotMatch");
+            if (match != null && notMatch != null)
+                throw new EvaluationException("Conditional: Cannot specify both Match and NotMatch");
+
+            string testValue = EvaluateText(xPath, false);
+
+            return (match != null && testValue == match) || (notMatch != null && testValue != notMatch);
+        }
+
         public void Release()
         {
             _element = null;
@@ -148,6 +160,18 @@ namespace OpenDocx
 
             return xPathSelectResult.ToString();
 
+        }
+
+        public async Task<bool> EvaluateBoolAsync(string xPath, string match, string notMatch)
+        {
+            if (match == null && notMatch == null)
+                throw new EvaluationException("Conditional: Must specify either Match or NotMatch");
+            if (match != null && notMatch != null)
+                throw new EvaluationException("Conditional: Cannot specify both Match and NotMatch");
+
+            string testValue = await EvaluateTextAsync(xPath, false);
+
+            return (match != null && testValue == match) || (notMatch != null && testValue != notMatch);
         }
 
         public async Task ReleaseAsync()
