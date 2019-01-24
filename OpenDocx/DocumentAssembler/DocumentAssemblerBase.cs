@@ -885,7 +885,7 @@ namespace OpenDocx
                     IDataContext[] repeatingData;
                     try
                     {
-                        repeatingData = data.EvaluateList(selector);
+                        repeatingData = data.EvaluateList(selector, optional);
                     }
                     catch (EvaluationException e)
                     {
@@ -893,16 +893,12 @@ namespace OpenDocx
                     }
                     if (!repeatingData.Any())
                     {
-                        if (optional)
-                        {
-                            return null;
-                            //XElement para = element.Descendants(W.p).FirstOrDefault();
-                            //if (para != null)
-                            //    return new XElement(W.p, new XElement(W.r));
-                            //else
-                            //    return new XElement(W.r);
-                        }
-                        return CreateContextErrorMessage(element, "Repeat: Select returned no data", templateError);
+                        return null;
+                        //XElement para = element.Descendants(W.p).FirstOrDefault();
+                        //if (para != null)
+                        //    return new XElement(W.p, new XElement(W.r));
+                        //else
+                        //    return new XElement(W.r);
                     }
                     var newContent = repeatingData.Select(d =>
                         {
@@ -921,7 +917,7 @@ namespace OpenDocx
                     IDataContext[] tableData;
                     try
                     {
-                        tableData = data.EvaluateList((string)element.Attribute(PA.Select));
+                        tableData = data.EvaluateList((string)element.Attribute(PA.Select), true);
                     }
                     catch (EvaluationException e)
                     {
@@ -1059,7 +1055,7 @@ namespace OpenDocx
                     IAsyncDataContext[] repeatingData;
                     try
                     {
-                        repeatingData = await data.EvaluateListAsync(selector);
+                        repeatingData = await data.EvaluateListAsync(selector, optional);
                     }
                     catch (EvaluationException e)
                     {
@@ -1067,16 +1063,12 @@ namespace OpenDocx
                     }
                     if (!repeatingData.Any())
                     {
-                        if (optional)
-                        {
-                            return null;
-                            //XElement para = element.Descendants(W.p).FirstOrDefault();
-                            //if (para != null)
-                            //    return new XElement(W.p, new XElement(W.r));
-                            //else
-                            //    return new XElement(W.r);
-                        }
-                        return CreateContextErrorMessage(element, "Repeat: Select returned no data", templateError);
+                        return null;
+                        //XElement para = element.Descendants(W.p).FirstOrDefault();
+                        //if (para != null)
+                        //    return new XElement(W.p, new XElement(W.r));
+                        //else
+                        //    return new XElement(W.r);
                     }
                     var newContentTasks = repeatingData.Select(async d =>
                         {
@@ -1095,7 +1087,7 @@ namespace OpenDocx
                     IAsyncDataContext[] tableData;
                     try
                     {
-                        tableData = await data.EvaluateListAsync((string)element.Attribute(PA.Select));
+                        tableData = await data.EvaluateListAsync((string)element.Attribute(PA.Select), true);
                     }
                     catch (EvaluationException e)
                     {

@@ -17,7 +17,7 @@ namespace OpenDocx
             _element = data;
         }
 
-        public IDataContext[] EvaluateList(string selector)
+        public IDataContext[] EvaluateList(string selector, bool optional)
         {
             IEnumerable<XElement> repeatingData;
             try
@@ -29,10 +29,17 @@ namespace OpenDocx
                 throw new EvaluationException("XPathException: " + e.Message);
             }
             var newContent = repeatingData.Select(d =>
-            {
-                return new XmlDataContext(d);
-            })
+                {
+                    return new XmlDataContext(d);
+                })
                 .ToArray();
+
+            if (!newContent.Any())
+            {
+                if (!optional)
+                    throw new EvaluationException("Repeat: Select returned no data");
+            }
+
             return newContent;
         }
 
@@ -102,7 +109,7 @@ namespace OpenDocx
             _element = data;
         }
 
-        public async Task<IAsyncDataContext[]> EvaluateListAsync(string selector)
+        public async Task<IAsyncDataContext[]> EvaluateListAsync(string selector, bool optional)
         {
             await Task.Yield(); // make this async -- silly, but really just for testing
             IEnumerable<XElement> repeatingData;
@@ -119,6 +126,13 @@ namespace OpenDocx
                     return new AsyncXmlDataContext(d);
                 })
                 .ToArray();
+
+            if (!newContent.Any())
+            {
+                if (!optional)
+                    throw new EvaluationException("Repeat: Select returned no data");
+            }
+
             return newContent;
         }
 

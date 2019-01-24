@@ -7,7 +7,7 @@ namespace OpenDocx
     {
         string EvaluateText(string selector, bool optional);
         bool EvaluateBool(string selector, string match, string notMatch);
-        IDataContext[] EvaluateList(string selector);
+        IDataContext[] EvaluateList(string selector, bool optional);
         void Release();
     }
 
@@ -15,7 +15,7 @@ namespace OpenDocx
     {
         Task<string> EvaluateTextAsync(string selector, bool optional);
         Task<bool> EvaluateBoolAsync(string selector, string match, string notMatch);
-        Task<IAsyncDataContext[]> EvaluateListAsync(string selector);
+        Task<IAsyncDataContext[]> EvaluateListAsync(string selector, bool optional);
         Task ReleaseAsync();
     }
 
