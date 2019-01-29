@@ -1,4 +1,4 @@
-﻿No NuGet.org feed at this time.
+﻿No automated NuGet.org feed at this time, although the current build is at (https://www.nuget.org/packages/OpenDocx/0.9.0-alpha).
 
 OpenDocx
 ========
@@ -15,6 +15,10 @@ the Open XML Power Tools in several key ways. It...
 - subdivides assembly into a multi-stage process for added flexibility and optimization _(in progress)_
 - adds support for additional template features (kinds of metadata) _(in progress)_
 - is generally structured to be embedded as a component in a larger, heterogeneous system
+
+For an example use case, see node.js module [opendocx-node](https://www.npmjs.com/package/opendocx-node),
+which uses edge.js to embed this .NET assembly into node.js. All data access during document assembly
+happens in node.js, while all manipulation of the DOCX is done in C#.
 
 Despite these significant changes (and others underway), the project has been structured to
 retain compatibility with the Open XML Power Tools -- all unit tests still pass. My aim is for
