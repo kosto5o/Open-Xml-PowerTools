@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFrameworks>net45;net46;netstandard2.0</TargetFrameworks>
-    <Version>0.9.0-alpha</Version>
+    <Version>0.9.1-alpha</Version>
     <Authors>OpenDocx</Authors>
     <Description>Template-based DOCX generation (document assembly) derived from Eric White's Open XML PowerTools</Description>
     <Copyright></Copyright>
@@ -10,6 +10,7 @@
     <RepositoryUrl>https://github.com/opendocx/opendocx.git</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageTags>OpenXML Word DOCX Templates Document Assembly</PackageTags>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
 
   <ItemGroup>

@@ -1159,24 +1159,18 @@ namespace OpenDocx
                     string selector = (string)element.Attribute(PA.Select);
                     var match = (string)element.Attribute(PA.Match);
                     var notMatch = (string)element.Attribute(PA.NotMatch);
-
-                    if (match == null && notMatch == null)
-                        return CreateContextErrorMessage(element, "Conditional: Must specify either Match or NotMatch", templateError);
-                    if (match != null && notMatch != null)
-                        return CreateContextErrorMessage(element, "Conditional: Cannot specify both Match and NotMatch", templateError);
-
-                    string testValue = null;
+                    bool testValue;
 
                     try
                     {
-                        testValue = await data.EvaluateTextAsync(selector, false);
+                        testValue = await data.EvaluateBoolAsync(selector, match, notMatch);
                     }
                     catch (EvaluationException e)
                     {
                         return CreateContextErrorMessage(element, e.Message, templateError);
                     }
 
-                    if ((match != null && testValue == match) || (notMatch != null && testValue != notMatch))
+                    if (testValue)
                     {
                         var contentTasks = element.Elements().Where(e => e.Name != PA.ElseConditional && e.Name != PA.Else).Select(e => ContentReplacementTransformAsync(e, data, templateError));
                         var content = await Task.WhenAll(contentTasks);
