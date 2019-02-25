@@ -11,7 +11,7 @@ using DocumentFormat.OpenXml.Packaging;
 
 namespace OpenXmlPowerTools
 {
-    public partial class DocumentAssembler : DocumentAssemblerBase
+    public class AsyncDocumentAssembler : DocumentAssemblerBase
     {
         public static Task<AssembleResult> AssembleDocumentAsync(WmlDocument templateDoc, XmlDocument data)
         {
@@ -34,10 +34,7 @@ namespace OpenXmlPowerTools
                 return new AssembleResult(new WmlDocument("TempFileName.docx", mem.ToArray()), templateError);
             }
         }
-    }
 
-    public partial class DocumentAssemblerBase
-    {
         protected static async Task<bool> AssembleDocumentAsync(WordprocessingDocument wordDoc, IAsyncDataContext data)
         {
             if (RevisionAccepter.HasTrackedRevisions(wordDoc))
@@ -82,6 +79,7 @@ namespace OpenXmlPowerTools
             }
             return te.HasError;
         }
+
         private static readonly object s_partLock = new object();
 
         private static async Task ProcessTemplatePartAsync(IAsyncDataContext data, TemplateError te, OpenXmlPart part)

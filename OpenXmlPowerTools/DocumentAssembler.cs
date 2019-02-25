@@ -19,7 +19,7 @@ using System.Collections;
 
 namespace OpenXmlPowerTools
 {
-    public partial class DocumentAssembler : DocumentAssemblerBase
+    public class DocumentAssembler : DocumentAssemblerBase
     {
         public static WmlDocument AssembleDocument(WmlDocument templateDoc, XmlDocument data, out bool templateError)
         {
@@ -44,7 +44,7 @@ namespace OpenXmlPowerTools
         }
     }
 
-    public partial class DocumentAssemblerBase
+    public class DocumentAssemblerBase
     {
         protected static bool AssembleDocument(WordprocessingDocument wordDoc, IDataContext data)
         {
@@ -59,7 +59,7 @@ namespace OpenXmlPowerTools
             return te.HasError;
         }
 
-        private static XElement PrepareTemplatePart(IMetadataParser data, TemplateError te, XElement xDocRoot)
+        protected static XElement PrepareTemplatePart(IMetadataParser data, TemplateError te, XElement xDocRoot)
         {
             xDocRoot = RemoveGoBackBookmarks(xDocRoot);
 
@@ -579,7 +579,7 @@ namespace OpenXmlPowerTools
             return null;
         }
 
-        private class PA
+        protected class PA
         {
             public static XName Content = "Content";
             public static XName Table = "Table";
@@ -603,7 +603,7 @@ namespace OpenXmlPowerTools
 
         private static Dictionary<XName, PASchemaSet> s_PASchemaSets = null;
 
-        private class TemplateError
+        protected class TemplateError
         {
             public bool HasError = false;
         }
@@ -765,7 +765,7 @@ namespace OpenXmlPowerTools
             return node;
         }
 
-        private static object ReplaceValue(XElement para, XElement run, string newValue)
+        protected static object ReplaceValue(XElement para, XElement run, string newValue)
         {
             if (para != null)
             {
@@ -793,7 +793,7 @@ namespace OpenXmlPowerTools
             }
         }
 
-        private static object CreateContextErrorMessage(XElement element, string errorMessage, TemplateError templateError)
+        protected static object CreateContextErrorMessage(XElement element, string errorMessage, TemplateError templateError)
         {
             XElement para = element.Descendants(W.p).FirstOrDefault();
             XElement run = element.Descendants(W.r).FirstOrDefault();
@@ -804,7 +804,7 @@ namespace OpenXmlPowerTools
                 return errorRun;
         }
 
-        private static XElement CreateRunErrorMessage(string errorMessage, TemplateError templateError)
+        protected static XElement CreateRunErrorMessage(string errorMessage, TemplateError templateError)
         {
             templateError.HasError = true;
             var errorRun = new XElement(W.r,
