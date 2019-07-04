@@ -1,6 +1,19 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>net45;net46;netstandard2.0</TargetFrameworks>
+    <!--<TargetFrameworks>net45;net46;netstandard2.0</TargetFrameworks>-->
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Company>opendocx</Company>
+    <Product></Product>
+    <Authors>opendocx, Eric White</Authors>
+    <Description>The OpenDocx fork of Open-Xml-Power-Tools. Essentially identical to maintainer EricWhite's vNext fork (as of early May 2019), but includes only .NET Standard 2.0 build target for use in cross-platform scenarios.</Description>
+    <PackageProjectUrl>https://github.com/opendocx/Open-Xml-PowerTools</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/opendocx/Open-Xml-PowerTools.git</RepositoryUrl>
+    <AssemblyVersion>4.4.21.0</AssemblyVersion>
+    <FileVersion>4.4.21.0</FileVersion>
+    <Version>4.4.21</Version>
+    <PackageId>OpenXmlPowerTools-NetStandard</PackageId>
+    <PackageLicenseUrl>https://opensource.org/licenses/MIT</PackageLicenseUrl>
   </PropertyGroup>
 
   <ItemGroup>
