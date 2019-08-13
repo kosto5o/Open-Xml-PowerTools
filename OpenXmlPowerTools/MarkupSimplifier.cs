@@ -168,13 +168,17 @@ namespace OpenXmlPowerTools
             XElement element = node as XElement;
             if (element != null)
             {
-                if (simplifyMarkupSettings.RemoveSmartTags &&
-                    element.Name == W.smartTag)
-                    return element
-                        .Elements()
-                        .Select(e =>
-                            RemoveCustomXmlAndContentControlsTransform(e,
-                                simplifyMarkupSettings));
+                if (simplifyMarkupSettings.RemoveSmartTags)
+                {
+                    if (element.Name == W.smartTag)
+                        return element
+                            .Elements()
+                            .Select(e =>
+                                RemoveCustomXmlAndContentControlsTransform(e,
+                                    simplifyMarkupSettings));
+                    if (element.Name == W.smartTagPr)
+                        return null;
+                }
 
                 if (simplifyMarkupSettings.RemoveContentControls &&
                     element.Name == W.sdt)
